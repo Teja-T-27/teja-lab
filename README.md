@@ -1,9 +1,12 @@
-# Teja's Archive
+# Teja Lab
 
-A personal collection of songs, poems, and books.
+A collection of standalone interactive pages and tools.
 
 ## Pages
 
-- [Songs](https://teja-t-27.github.io/teja-songs-poems-books-archive/songs.html)
-- [Poems](https://teja-t-27.github.io/teja-songs-poems-books-archive/poems.html)
-- [Books](https://teja-t-27.github.io/teja-songs-poems-books-archive/books.html)
+- [Boxing](https://teja-t-27.github.io/teja-lab/boxing.html)
+- [Flicker](https://teja-t-27.github.io/teja-lab/flicker.html)
+- [Indian Constitution Rights Docket](https://teja-t-27.github.io/teja-lab/Indianconstitution-rights-docket.html)
+- [Lexus](https://teja-t-27.github.io/teja-lab/lexus.html)
+- [MBTI](https://teja-t-27.github.io/teja-lab/mbti.html)
+- [Rubik's Cheatsheet](https://teja-t-27.github.io/teja-lab/rubiks-cheatsheet.html)
