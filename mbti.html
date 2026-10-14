@@ -1,0 +1,1045 @@
+<title>Cognitive Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+:root{
+  --paper:#F4F3EE; --sheet:#FCFBF8; --tint:#E9E7DF;
+  --ink:#141414; --ink-2:#47463F; --muted:#86847B; --hair:#D3D0C5;
+  --blue:#0078BF; --pink:#FF48B0; --green:#00A95C; --orange:#FF6C2F; --yellow:#FFE800;
+  --marker:rgba(255,232,0,.7);
+  --blend:multiply;
+  --display:'Archivo','Arial Narrow',Arial,sans-serif;
+  --body:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --type:'Courier Prime','Courier New',Courier,monospace;
+}
+:root.dark{
+  --paper:#121212; --sheet:#1B1B1A; --tint:#272724;
+  --ink:#F0EEE7; --ink-2:#BEBBB1; --muted:#827F76; --hair:#3A3934;
+  --blue:#3BA3EC; --pink:#FF63C0; --green:#1EC47E; --orange:#FF8148; --yellow:#FFEA4A;
+  --marker:rgba(255,234,74,.25);
+  --blend:screen;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:20px;padding-block:26px 80px}
+
+/* svg paint classes */
+.fill-blue{fill:var(--blue)} .fill-pink{fill:var(--pink)} .fill-green{fill:var(--green)} .fill-orange{fill:var(--orange)} .fill-yellow{fill:var(--yellow)} .fill-ink{fill:var(--ink)} .fill-sheet{fill:var(--sheet)}
+.stroke-blue{stroke:var(--blue)} .stroke-pink{stroke:var(--pink)} .stroke-green{stroke:var(--green)} .stroke-orange{stroke:var(--orange)} .stroke-yellow{stroke:var(--yellow)} .stroke-ink{stroke:var(--ink)} .stroke-hair{stroke:var(--hair)} .stroke-muted{stroke:var(--muted)}
+.node-blue{fill:color-mix(in srgb,var(--blue) 20%,var(--sheet))} .node-pink{fill:color-mix(in srgb,var(--pink) 20%,var(--sheet))} .node-green{fill:color-mix(in srgb,var(--green) 20%,var(--sheet))} .node-orange{fill:color-mix(in srgb,var(--orange) 22%,var(--sheet))}
+.gs{mix-blend-mode:var(--blend)}
+.dg{width:100%;height:auto;display:block}
+.dg-code{font-family:var(--type);font-weight:700;font-size:17px;fill:var(--ink)}
+.dg-role{font-family:var(--type);font-size:9.5px;fill:var(--ink-2)}
+.dg-side{font-family:var(--type);font-size:12px;fill:var(--ink-2)}
+.dg-lab{font-family:var(--type);font-size:12px;font-weight:700;fill:var(--ink)}
+.dg-big{font-family:var(--display);font-weight:800;font-size:15px;fill:var(--ink)}
+.tl-lab{font-family:var(--type);font-weight:700;font-size:11.5px;fill:var(--ink)}
+.tl-tick{font-family:var(--type);font-size:11px;fill:var(--ink-2)}
+.mut{fill:var(--muted)}
+.grid-c{fill:none;stroke:var(--hair);stroke-width:1}
+.grid-l{stroke:var(--hair);stroke-width:1}
+.rlab{font-family:var(--type);font-weight:700;font-size:13px;fill:var(--ink)}
+
+/* html fills */
+.solid{background:var(--c)}
+.ht{background-image:radial-gradient(circle,var(--c) 0 1.45px,transparent 1.7px);background-size:5px 5px;box-shadow:inset 0 0 0 2px var(--c)}
+.hatch{background-image:repeating-linear-gradient(135deg,var(--c) 0 1.5px,transparent 1.5px 5px);box-shadow:inset 0 0 0 1px var(--c)}
+
+/* riso misregistration on big type codes */
+.misreg{position:relative;display:inline-block}
+.misreg::after{content:attr(data-text);position:absolute;left:0;top:0;transform:translate(.05em,.035em);color:var(--acc,var(--pink));mix-blend-mode:var(--blend);pointer-events:none}
+
+/* masthead */
+.mast{display:grid;grid-template-columns:1fr auto;align-items:end;gap:12px 32px;padding-bottom:14px;border-bottom:3px solid var(--ink)}
+.mast h1{margin:0;font-family:var(--display);font-weight:900;font-stretch:62%;text-transform:uppercase;font-size:clamp(58px,11.5vw,150px);line-height:.8;letter-spacing:-.005em;--acc:var(--pink)}
+.mast-side{display:flex;flex-direction:column;align-items:flex-end;gap:12px;padding-bottom:4px}
+.mode{border:2px solid var(--ink);background:var(--sheet);padding:6px 12px;font-family:var(--type);font-weight:700;font-size:13px;cursor:pointer}
+.mode:hover{background:var(--ink);color:var(--paper)}
+.mast-note{font-family:var(--type);font-size:13.5px;color:var(--ink-2);text-align:right;max-width:34ch;line-height:1.4;margin:0}
+.sub{display:flex;justify-content:space-between;gap:6px 24px;flex-wrap:wrap;padding:8px 0;font-family:var(--type);font-size:12.5px;color:var(--ink-2);border-bottom:1px solid var(--ink)}
+@media (max-width:680px){.mast{grid-template-columns:1fr}.mast-side{align-items:flex-start}.mast-note{text-align:left}}
+
+/* tabs */
+.tabs{display:flex;gap:4px;margin:20px 0 28px;overflow-x:auto;scrollbar-width:none;border-bottom:2px solid var(--ink);padding-top:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{font-family:var(--display);font-stretch:85%;font-weight:700;font-size:15.5px;padding:9px 14px 7px;border:2px solid var(--ink);border-bottom:0;background:var(--sheet);cursor:pointer;white-space:nowrap;margin-bottom:-2px}
+.tab:hover{background:var(--tint)}
+.tab.on{background:var(--ink);color:var(--paper)}
+
+/* shared type */
+.h3{font-family:var(--display);font-weight:800;font-stretch:80%;font-size:15px;text-transform:uppercase;letter-spacing:.03em;margin:0 0 10px;padding-top:7px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;align-items:baseline;gap:4px 14px;flex-wrap:wrap}
+.h3 small{font-family:var(--type);font-weight:400;text-transform:none;font-size:12.5px;color:var(--muted);letter-spacing:0}
+.lede{font-size:18px;line-height:1.45;max-width:64ch;color:var(--ink-2);margin:0 0 22px;text-wrap:pretty}
+.note{font-family:var(--type);font-size:12.5px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+.panel{border:2px solid var(--ink);background:var(--sheet);padding:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--ink);padding:3px 10px;font-size:14px;background:var(--sheet);display:inline-flex;align-items:center;gap:6px}
+button.chip{cursor:pointer}
+button.chip:hover,button.chip.on{background:var(--ink);color:var(--paper)}
+.sw{display:inline-block;width:11px;height:11px;background:var(--c);border:1.5px solid var(--ink);flex:none}
+.btn{border:2px solid var(--ink);background:var(--ink);color:var(--paper);padding:9px 14px;font-family:var(--type);font-weight:700;font-size:13.5px;cursor:pointer}
+.btn.alt{background:var(--sheet);color:var(--ink)}
+.btn:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.mark{background:linear-gradient(transparent 56%,var(--marker) 56%)}
+
+/* ===== ATLAS ===== */
+.atlas{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,1fr);gap:28px;align-items:start}
+.atlas-left{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:980px){.atlas{grid-template-columns:1fr}.atlas-left{position:static}}
+.tt{display:grid;grid-template-columns:34px repeat(4,minmax(0,1fr));gap:2px;background:var(--ink);border:2px solid var(--ink)}
+.tt-lab{display:grid;place-items:center;font-family:var(--type);font-weight:700;font-size:13px;color:var(--ink-2);padding:5px 0;background:var(--paper)}
+.cell{position:relative;border:0;padding:10px 10px 9px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px;min-height:148px;background:var(--sheet);background:color-mix(in srgb,var(--c) var(--p),var(--sheet))}
+.cell .g{width:64px;height:64px;margin-bottom:6px;display:block}
+.cell .code{font-family:var(--display);font-weight:800;font-stretch:68%;font-size:30px;line-height:.9}
+.cell .nick{font-size:13px;color:var(--ink-2);line-height:1.2}
+.cell .pct{position:absolute;top:8px;right:9px;font-family:var(--type);font-size:12px;color:var(--ink-2)}
+.cell:hover{outline:2px solid var(--ink);outline-offset:-6px}
+.cell.on{outline:3px solid var(--ink);outline-offset:-6px}
+.cell.on::after{content:"";position:absolute;right:9px;bottom:9px;width:10px;height:10px;background:var(--ink)}
+@media (max-width:560px){.cell{min-height:104px;padding:8px 6px}.cell .g{width:40px;height:40px}.cell .code{font-size:22px}.cell .nick{display:none}.cell .pct{font-size:10.5px;top:6px;right:5px}.tt{grid-template-columns:26px repeat(4,minmax(0,1fr))}.tt-lab{font-size:11px}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-family:var(--type);font-size:12.5px;color:var(--ink-2);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend b{color:var(--ink)}
+
+.detail{background:var(--sheet);border:2px solid var(--ink);padding:24px;min-width:0}
+@media (max-width:560px){.detail{padding:16px}}
+.d-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start}
+.d-code{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:clamp(76px,9vw,124px);line-height:.8}
+.d-name{font-family:var(--display);font-weight:700;font-stretch:85%;font-size:26px;line-height:1.1;margin-top:10px}
+.d-meta{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-family:var(--type);font-size:13px;color:var(--ink-2);align-items:center}
+.d-meta .t{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:700}
+.d-glyph{display:flex;flex-direction:column;align-items:center;gap:8px}
+.d-glyph .big{width:132px;height:132px}
+.anat{font-family:var(--type);font-size:12px;color:var(--ink-2);display:grid;gap:1px}
+.anat div{display:flex;gap:6px;align-items:center}
+.d-sig{font-size:20px;line-height:1.4;margin:22px 0 4px;max-width:52ch;text-wrap:pretty}
+.block{margin-top:28px}
+.srow{display:grid;grid-template-columns:112px minmax(0,1fr);gap:2px 14px;align-items:center;margin-bottom:9px}
+.srole{font-weight:700;font-size:14px;line-height:1.15}
+.srole small{display:block;font-family:var(--type);font-weight:400;font-size:12px;color:var(--muted)}
+.bar{position:relative;height:28px;background:var(--tint)}
+.bar .fill{position:absolute;top:0;bottom:0;left:0}
+.bar .tag{position:absolute;left:6px;top:50%;transform:translateY(-50%);background:var(--sheet);border:1.5px solid var(--ink);padding:0 6px;font-family:var(--type);font-weight:700;font-size:13px;line-height:18px}
+.bcap{font-size:13.5px;color:var(--ink-2);margin-top:3px;line-height:1.35}
+.srow.sh .bar{height:18px}
+.srow.sh .tag{font-size:11px;line-height:13px}
+.srow.sh .bcap{font-size:12.5px}
+.split2{display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:560px){.split2{grid-template-columns:1fr}}
+.radar{width:100%;height:auto;display:block;max-width:300px}
+.kv{margin:0}
+.kv dt{font-family:var(--display);font-weight:800;font-stretch:80%;font-size:14px;text-transform:uppercase;letter-spacing:.03em}
+.kv dd{margin:2px 0 14px;font-size:15.5px;color:var(--ink-2)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.duo{grid-template-columns:1fr}}
+.box{border:2px solid var(--ink);padding:12px 14px;background:var(--paper)}
+.box h4{margin:0 0 4px;font-family:var(--display);font-weight:800;font-stretch:80%;font-size:14px;text-transform:uppercase;letter-spacing:.03em}
+.box p{margin:0;font-size:14.5px;color:var(--ink-2)}
+.loop-txt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;font-size:14px;color:var(--ink-2)}
+.loop-txt b{color:var(--ink)}
+@media (max-width:560px){.loop-txt{grid-template-columns:1fr}}
+
+.pop{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:32px;margin-top:44px}
+@media (max-width:900px){.pop{grid-template-columns:1fr}}
+.wread{font-family:var(--type);font-size:13.5px;min-height:1.6em;margin-bottom:8px}
+.wread b{font-family:var(--display);font-weight:800;font-stretch:70%;font-size:18px}
+.waffle{display:grid;grid-template-rows:repeat(10,auto);grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:3px}
+.wc{display:block;aspect-ratio:1;cursor:pointer;transition:opacity .15s}
+.waffle.hl .wc{opacity:.15}
+.waffle.hl .wc.hit{opacity:1}
+.srow2{display:grid;grid-template-columns:24px minmax(0,1fr) 24px;gap:10px;align-items:center;margin-bottom:12px}
+.srow2 .L{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:28px;line-height:1;text-align:center}
+.sbar{display:flex;height:26px;border:2px solid var(--ink);font-family:var(--type);font-size:12.5px;font-weight:700}
+.sbar span{display:flex;align-items:center;padding:0 6px;white-space:nowrap;overflow:hidden}
+.sbar .l{background:var(--ink);color:var(--paper)}
+.sbar .r{justify-content:flex-end;flex:1}
+.tbar{display:flex;height:34px;border:2px solid var(--ink)}
+.tbar span{display:block;height:100%}
+.tbar span+span{border-left:2px solid var(--ink)}
+.tlist{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;margin-top:10px;font-size:14px}
+.tlist div{display:flex;align-items:center;gap:7px}
+.tlist b{font-family:var(--type);margin-left:auto}
+
+/* ===== COMPARE ===== */
+.cmp-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px}
+select{font-family:var(--display);font-weight:700;font-stretch:85%;font-size:17px;padding:8px 10px;border:2px solid var(--ink);background:var(--sheet);color:var(--ink);border-radius:0;max-width:100%}
+.vs{font-family:var(--type);font-weight:700;font-size:14px}
+.cmp-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px;align-items:center}
+.cmp-side{display:flex;align-items:center;gap:16px;min-width:0}
+.cmp-side.r{flex-direction:row-reverse;text-align:right}
+.cmp-side svg{width:96px;height:96px;flex:none}
+.cmp-code{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:clamp(52px,7vw,80px);line-height:.82}
+.cmp-nick{font-size:15px;color:var(--ink-2);margin-top:4px}
+.cmp-x{font-family:var(--display);font-weight:300;font-size:46px;line-height:1}
+.cmp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:20px}
+@media (max-width:860px){.cmp-grid{grid-template-columns:1fr}}
+@media (max-width:600px){.cmp-head{grid-template-columns:1fr}.cmp-x{display:none}.cmp-side.r{flex-direction:row;text-align:left}.cmp-side svg{width:72px;height:72px}}
+.verdict{font-size:19px;line-height:1.4;margin:0 0 16px;text-wrap:pretty}
+.lg{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px 10px;align-items:center}
+.lg .L{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:36px;line-height:1;text-align:center;padding:2px 0}
+.lg .L.same{background:var(--yellow);color:#141414}
+.lg .mid{font-family:var(--type);font-size:12.5px;text-align:center;color:var(--ink-2);border-bottom:1.5px dashed var(--hair);padding-bottom:3px}
+.score{width:100%;border-collapse:collapse;font-family:var(--type);font-size:13.5px;margin-top:16px}
+.score td{padding:5px 0;border-bottom:1px solid var(--hair)}
+.score td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.score tr.tot td{border-top:2px solid var(--ink);border-bottom:0;font-size:15px}
+.key{display:flex;flex-wrap:wrap;gap:4px 16px;font-family:var(--type);font-size:12px;color:var(--ink-2);margin-top:8px}
+.key i{display:inline-block;width:26px;height:0;border-top:3px solid var(--ink);vertical-align:middle;margin-right:6px}
+.key i.dot{border-top:2px dotted var(--muted)}
+
+/* ===== PAIRINGS ===== */
+.pair-wrap{display:grid;grid-template-columns:auto minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:1040px){.pair-wrap{grid-template-columns:1fr}}
+.hm-scroll{overflow-x:auto;max-width:100%}
+table.hm{border-collapse:separate;border-spacing:2px;font-family:var(--type);font-size:11.5px}
+.hm th{font-weight:700;color:var(--ink-2);padding:0 4px}
+.hm th.ch{height:48px;vertical-align:bottom;padding:0 0 4px}
+.hm th.ch span{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg)}
+.hm th.rh{text-align:right;cursor:pointer;padding:0 6px}
+.hm th.rh:hover,.hm th.rh.on{background:var(--ink);color:var(--paper)}
+.hm td{width:28px;height:28px;padding:0;cursor:pointer;position:relative;background:var(--sheet)}
+.hm td i{position:absolute;inset:0;background:var(--blue);opacity:var(--o)}
+.hm td.self{background-image:repeating-linear-gradient(135deg,var(--muted) 0 1px,transparent 1px 4px)}
+.hm td.self i{display:none}
+.hm td:hover{outline:2px solid var(--ink);z-index:1}
+.hm-key{display:flex;align-items:center;gap:10px;font-family:var(--type);font-size:12px;color:var(--ink-2);margin-top:12px}
+.hm-key .g{width:160px;height:12px;background:linear-gradient(90deg,color-mix(in srgb,var(--blue) 6%,var(--sheet)),var(--blue));border:1.5px solid var(--ink)}
+.rank-row{display:grid;grid-template-columns:54px minmax(0,1fr) 34px;gap:10px;align-items:center;padding:3px 0;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.rank-row:hover .rbar{outline:1.5px solid var(--ink)}
+.rcode{font-family:var(--display);font-weight:800;font-stretch:70%;font-size:19px;line-height:1}
+.rbar{height:18px;background:var(--tint);position:relative}
+.rbar span{position:absolute;top:0;bottom:0;left:0;background:var(--c)}
+.rbar em{position:absolute;left:calc(var(--w) + 6px);top:50%;transform:translateY(-50%);font-style:normal;font-family:var(--type);font-size:11px;background:var(--yellow);color:#141414;padding:0 4px;white-space:nowrap}
+.rnum{font-family:var(--type);font-weight:700;font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--sheet);border:2px solid var(--ink);padding:8px 10px;font-family:var(--type);font-size:12.5px;max-width:270px;line-height:1.45}
+.tip b{font-family:var(--display);font-weight:800;font-stretch:75%;font-size:16px}
+
+/* ===== QUIZ ===== */
+.sheet{max-width:800px;margin:0 auto;border:2px solid var(--ink);background:var(--sheet);padding:24px 28px}
+@media (max-width:560px){.sheet{padding:18px 16px}}
+.sheet-top{display:flex;justify-content:space-between;font-family:var(--type);font-size:13px;font-weight:700;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:14px;gap:6px 12px;flex-wrap:wrap}
+.bubbles{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+.bubbles i{width:16px;height:16px;border:1.5px solid var(--ink);border-radius:50%;display:block}
+.bubbles i.done{background:var(--ink)}
+.bubbles i.now{box-shadow:0 0 0 4px var(--yellow)}
+.qtext{font-family:var(--display);font-weight:700;font-stretch:85%;font-size:clamp(23px,3.3vw,31px);line-height:1.15;margin:0 0 20px;text-wrap:balance}
+.opt{display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:center;width:100%;text-align:left;border:2px solid var(--ink);background:var(--paper);padding:13px 16px;margin-bottom:10px;cursor:pointer;font-size:17px;line-height:1.35}
+.opt .bub{width:32px;height:32px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-family:var(--type);font-weight:700}
+.opt:hover{background:var(--sheet)}
+.opt:hover .bub{background:var(--ink);color:var(--paper)}
+.sheet-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;font-family:var(--type);font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.linkbtn{border:0;background:none;padding:0;font-family:var(--type);font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:disabled{opacity:.35;cursor:default}
+.res-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center;margin-bottom:22px}
+.res-head svg{width:128px;height:128px}
+.res-code{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:clamp(84px,14vw,140px);line-height:.8}
+.pci-row{display:grid;grid-template-columns:30px minmax(0,1fr) 30px;gap:4px 10px;align-items:center;margin-bottom:14px}
+.pci-row .L{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:30px;line-height:1;text-align:center;color:var(--muted)}
+.pci-row .L.win{color:var(--ink)}
+.track{position:relative;height:22px;border:2px solid var(--ink);background:var(--paper)}
+.track::before{content:"";position:absolute;left:50%;top:-7px;bottom:-7px;width:2px;background:var(--ink);transform:translateX(-1px)}
+.track .f{position:absolute;top:0;bottom:0;background:var(--c)}
+.pci-cap{grid-column:2;font-family:var(--type);font-size:12.5px;color:var(--ink-2);text-align:center}
+
+/* ===== AXES ===== */
+.fam{display:grid;grid-template-columns:120px minmax(0,1fr) minmax(0,1fr);gap:2px;background:var(--ink);border:2px solid var(--ink)}
+.fam>div{background:var(--sheet);padding:12px}
+.fam .fh{background:var(--paper);font-family:var(--type);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3}
+.fam-cap{font-family:var(--type);font-size:12px;color:var(--muted);margin-bottom:8px}
+.fam-cell{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.fam-t{border:0;background:none;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.fam-t svg{width:58px;height:58px}
+.fam-t b{font-family:var(--display);font-weight:800;font-stretch:70%;font-size:19px;padding:0 3px}
+.fam-t:hover b{background:var(--yellow);color:#141414}
+@media (max-width:680px){.fam{grid-template-columns:1fr}.fam .fh{display:none}.fam-t svg{width:46px;height:46px}}
+.axes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:36px}
+@media (max-width:860px){.axes{grid-template-columns:1fr}}
+.axis{border:2px solid var(--ink);background:var(--sheet);padding:18px}
+.axis-k{font-family:var(--type);font-size:12.5px;color:var(--muted)}
+.axis-t{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:46px;line-height:.9;text-transform:uppercase;margin:2px 0 8px}
+.axis-m{font-size:15.5px;margin:0 0 4px;color:var(--ink-2);max-width:56ch}
+.beam{transition:transform .7s cubic-bezier(.3,1.5,.5,1);transform-box:view-box;transform-origin:200px 118px}
+.poles{display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:14px;color:var(--ink-2);margin-bottom:10px}
+.poles b{font-family:var(--type);color:var(--ink)}
+.axis-read{font-family:var(--type);font-size:13px;margin:10px 0 0;min-height:2.9em;color:var(--ink-2)}
+
+/* ===== FUNCTIONS ===== */
+.ptab-wrap{overflow-x:auto;max-width:100%}
+.ptab{width:100%;min-width:640px;border-collapse:separate;border-spacing:2px;background:var(--ink);border:2px solid var(--ink)}
+.ptab th,.ptab td{background:var(--sheet);padding:8px 10px;text-align:left;vertical-align:middle}
+.ptab thead th{background:var(--paper);font-family:var(--type);font-size:12.5px;font-weight:700}
+.ptab .fnh{display:flex;align-items:center;gap:10px}
+.ptab .fnh svg{width:28px;height:28px;flex:none}
+.ptab .fnh b{font-family:var(--type);font-size:16px}
+.ptab .fnh span{font-size:13px;color:var(--ink-2);line-height:1.2;font-weight:400}
+.ptab td{background:color-mix(in srgb,var(--c) var(--p),var(--sheet))}
+.ptab td button{border:0;background:none;padding:1px 4px;font-family:var(--display);font-weight:800;font-stretch:70%;font-size:18px;cursor:pointer}
+.ptab td button:hover{background:var(--ink);color:var(--paper)}
+.fcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 22px;margin-top:34px}
+@media (max-width:1000px){.fcards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.fcards{grid-template-columns:1fr}}
+.fcard{border-top:3px solid var(--ink);padding-top:12px}
+.fcard .top{display:flex;align-items:center;gap:12px}
+.fcard svg{width:50px;height:50px;flex:none}
+.fc-code{font-family:var(--display);font-weight:900;font-stretch:62%;font-size:44px;line-height:.9}
+.fc-name{font-weight:700;font-size:15px;margin:8px 0 6px}
+.fcard p{margin:0 0 8px;font-size:14.5px;color:var(--ink-2)}
+.fcard .like{font-size:14.5px;color:var(--ink)}
+
+/* ===== FINE PRINT ===== */
+.fp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:860px){.fp{grid-template-columns:1fr}}
+figure{margin:0}
+.fig{border:2px solid var(--ink);background:var(--sheet);padding:16px}
+.fig svg{width:100%;height:auto;display:block}
+.fig figcaption{font-size:14.5px;color:var(--ink-2);margin-top:10px;text-wrap:pretty}
+.verdicts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+@media (max-width:640px){.verdicts{grid-template-columns:1fr}}
+
+footer{margin-top:64px;padding-top:12px;border-top:3px solid var(--ink);font-family:var(--type);font-size:12.5px;color:var(--ink-2);display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:10px 32px}
+footer p{margin:0}
+@media (max-width:700px){footer{grid-template-columns:1fr}}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="ht-blue" width="4.2" height="4.2" patternUnits="userSpaceOnUse" patternTransform="rotate(20)"><circle cx="2.1" cy="2.1" r="1.3" class="fill-blue"/></pattern>
+    <pattern id="ht-pink" width="4.2" height="4.2" patternUnits="userSpaceOnUse" patternTransform="rotate(75)"><circle cx="2.1" cy="2.1" r="1.3" class="fill-pink"/></pattern>
+    <pattern id="ht-green" width="4.2" height="4.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="2.1" cy="2.1" r="1.3" class="fill-green"/></pattern>
+    <pattern id="ht-orange" width="4.2" height="4.2" patternUnits="userSpaceOnUse" patternTransform="rotate(5)"><circle cx="2.1" cy="2.1" r="1.3" class="fill-orange"/></pattern>
+    <pattern id="ht-yellow" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(60)"><circle cx="2" cy="2" r="1.6" class="fill-yellow"/></pattern>
+    <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.3" height="5" class="fill-ink"/></pattern>
+    <marker id="ar-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fill-ink"/></marker>
+    <marker id="ar-or" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fill-orange"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+<header class="mast">
+  <h1><span class="misreg" data-text="Cognitive Atlas">Cognitive Atlas</span></h1>
+  <div class="mast-side">
+    <button class="mode" id="mode" aria-pressed="false">Dark mode</button>
+    <p class="mast-note">The sixteen Myers-Briggs types, the eight cognitive functions they're built from, and how the pieces fit together.</p>
+  </div>
+</header>
+<div class="sub">
+  <span>Type table after I. B. Myers · Nicknames after D. Keirsey · Function roles after J. Beebe</span>
+  <span>Not affiliated with The Myers-Briggs Company</span>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab on" data-tab="atlas" role="tab">Type table</button>
+  <button class="tab" data-tab="compare" role="tab">Compare</button>
+  <button class="tab" data-tab="pairs" role="tab">Pairings</button>
+  <button class="tab" data-tab="quiz" role="tab">Questionnaire</button>
+  <button class="tab" data-tab="axes" role="tab">Axes &amp; families</button>
+  <button class="tab" data-tab="functions" role="tab">Functions</button>
+  <button class="tab" data-tab="fine" role="tab">Fine print</button>
+</nav>
+
+<!-- ============ ATLAS ============ -->
+<section id="tab-atlas">
+  <div class="atlas">
+    <div class="atlas-left">
+      <div class="h3">The type table <small>Click a type</small></div>
+      <div class="tt" id="tt"></div>
+      <div class="legend" id="legend"></div>
+      <div class="legend" id="legend2"></div>
+    </div>
+    <article class="detail" id="detail" aria-live="polite"></article>
+  </div>
+
+  <div class="pop">
+    <div>
+      <div class="h3">Who's who <small>Each square is 0.5% of the US sample</small></div>
+      <div class="wread" id="wread">Hover a square to see the type. Click to open it.</div>
+      <div class="waffle" id="waffle" role="img" aria-label="Waffle chart of type prevalence in the US population"></div>
+      <p class="note">Source: MBTI Manual, 3rd ed. (1998), US national representative sample. Figures are rounded and sum to slightly over 100%.</p>
+    </div>
+    <div>
+      <div class="h3">How the letters split</div>
+      <div id="splits"></div>
+      <div class="h3" style="margin-top:26px">Temperaments</div>
+      <div id="temps"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPARE ============ -->
+<section id="tab-compare" hidden>
+  <div class="cmp-ctl">
+    <label class="vs" for="pickA">Type A</label><select id="pickA"></select>
+    <label class="vs" for="pickB">Type B</label><select id="pickB"></select>
+    <button class="btn alt" id="swap">Swap</button>
+    <button class="btn alt" id="shuffle">Random pair</button>
+  </div>
+  <div class="panel cmp-head" id="cmpHead"></div>
+  <div class="cmp-grid">
+    <div class="panel">
+      <div class="h3">Stack alignment <small>Where the same function sits in each stack</small></div>
+      <div id="ladder"></div>
+      <div class="key"><span><i></i>same function</span><span><i class="dot"></i>same letter, opposite attitude</span></div>
+    </div>
+    <div class="panel">
+      <div class="h3">Shared functions <small>Top four only</small></div>
+      <div id="venn"></div>
+    </div>
+    <div class="panel">
+      <div class="h3">All eight functions <small>Illustrative weights</small></div>
+      <div id="cmpRadar" style="display:flex;justify-content:center"></div>
+      <div class="key" id="cmpRadarKey" style="justify-content:center"></div>
+    </div>
+    <div class="panel">
+      <div class="h3">Letter by letter</div>
+      <p class="verdict" id="verdict"></p>
+      <div class="lg" id="letters"></div>
+      <table class="score" id="score"></table>
+      <p class="note">The score is a rough heuristic, not a prediction. See the Fine print tab.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAIRINGS ============ -->
+<section id="tab-pairs" hidden>
+  <p class="lede">All 256 combinations, scored on shared functions, matching letters, and whether type lore calls it a classic pair. Darker means more overlap. Click a row label to rank every match for that type; click a cell to open the comparison.</p>
+  <div class="pair-wrap">
+    <div>
+      <div class="h3">Overlap matrix</div>
+      <div class="hm-scroll"><div id="hm"></div></div>
+      <div class="hm-key"><span>less overlap</span><span class="g"></span><span>more overlap</span></div>
+    </div>
+    <div>
+      <div class="h3"><span id="rankTitle">Ranked for INTJ</span> <small>Highlighted = classic pair</small></div>
+      <div id="rank"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section id="tab-quiz" hidden>
+  <div class="sheet" id="sheet"></div>
+</section>
+
+<!-- ============ AXES ============ -->
+<section id="tab-axes" hidden>
+  <p class="lede">The eight functions come in four opposed pairs. Every type's top four functions are exactly <span class="mark">two complete pairs</span>: one for taking in information, one for making decisions. Choose one of each and you get a family of four types that share the same toolkit and differ only in which tool they reach for first.</p>
+  <div class="h3">The four families <small>Rows: perceiving axis · Columns: judging axis</small></div>
+  <div class="fam" id="fam"></div>
+  <div class="axes" id="axes"></div>
+</section>
+
+<!-- ============ FUNCTIONS ============ -->
+<section id="tab-functions" hidden>
+  <p class="lede">Each function shows up in exactly two types at every position. Read across a row to see who leads with it and who struggles with it.</p>
+  <div class="h3">Function × position <small>Click a type to open it</small></div>
+  <div class="ptab-wrap"><table class="ptab" id="ptab"></table></div>
+  <div class="fcards" id="fcards"></div>
+</section>
+
+<!-- ============ FINE PRINT ============ -->
+<section id="tab-fine" hidden>
+  <p class="lede">The Myers-Briggs framework is a useful vocabulary for talking about how people differ. As a measuring instrument it has well-documented problems, and the cognitive-function layer used on this site has even less research behind it.</p>
+  <div class="fp">
+    <figure class="fig">
+      <div class="h3">Two camps, or one crowd?</div>
+      <div id="figCurve"></div>
+      <figcaption>Type theory treats each scale as two camps. Measured scores form a single hump with most people near the middle, so a couple of answers can flip a letter. That helps explain why reviews have found many people get a different type on retest within weeks (Pittenger, 1993).</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="h3">How the letters map to the Big Five</div>
+      <div id="figBig5"></div>
+      <figcaption>Four MBTI scales line up with four of the Big Five traits used in personality research. Neuroticism, how strongly you react to stress, has no MBTI counterpart. Correlations are approximate, from McCrae &amp; Costa (1989).</figcaption>
+    </figure>
+  </div>
+  <div class="verdicts">
+    <div class="box"><h4>Reasonable uses</h4><p>A shared language for differences in energy, attention and decision style. Team conversations. Self-reflection, held loosely.</p></div>
+    <div class="box"><h4>Poor uses</h4><p>Hiring and promotion. Diagnosing anyone. Predicting whether two people will get along. The Pairings tab is type lore, not evidence.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Sources: type table and prevalence, MBTI Manual 3rd ed. (1998). Nicknames and temperaments, Keirsey, <i>Please Understand Me II</i> (1998). Eight-function roles, John Beebe. Development ages, Grant et al., <i>From Image to Likeness</i> (1983). Big Five links, McCrae &amp; Costa (1989). Fictional characters are popular fan typings, not canon.</p>
+  <p>The questionnaire is an informal 20-item sketch written for this page, not the official MBTI assessment. MBTI and Myers-Briggs are trademarks of The Myers-Briggs Company.</p>
+</footer>
+
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function(){
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const scrollTo=el=>el.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+
+/* ---------------- data ---------------- */
+const FN={
+  Ni:{name:'Introverted Intuition',short:'Sees where things are heading.',desc:'Boils a lot of scattered input down to one read on what happens next. Often can’t show the working.',like:'A chess player who sees mate in six and can’t quite say how.'},
+  Ne:{name:'Extraverted Intuition',short:'Sees what else something could be.',desc:'Takes one input and branches it into options and connections. Loses interest once the answer is settled.',like:'Opening twelve browser tabs because every link looked interesting.'},
+  Si:{name:'Introverted Sensing',short:'Compares now with before.',desc:'Keeps a detailed record of past experience and reads new situations against it. Notices when something is off from usual.',like:'The friend who knows the route because they’ve driven it a hundred times.'},
+  Se:{name:'Extraverted Sensing',short:'Takes in what’s here right now.',desc:'Sharp awareness of the physical present: sights, sounds, openings, risks. Reacts fast to what is actually happening.',like:'A goalkeeper reading the striker’s hips, not the playbook.'},
+  Ti:{name:'Introverted Thinking',short:'Checks whether it makes sense internally.',desc:'Builds a personal framework and tests ideas against it for consistency. Precise with definitions, wary of borrowed conclusions.',like:'Rebuilding a recipe from scratch to understand why it works.'},
+  Te:{name:'Extraverted Thinking',short:'Organises things so they work.',desc:'Uses external logic: data, deadlines, measurable outcomes. Turns goals into plans and plans into tasks with owners.',like:'A project tracker with every column filled in.'},
+  Fi:{name:'Introverted Feeling',short:'Checks against personal values.',desc:'Judges by an inner sense of right and wrong that isn’t negotiated with the group. Rarely explained, hard to argue with.',like:'A compass. It doesn’t care which way everyone else is walking.'},
+  Fe:{name:'Extraverted Feeling',short:'Reads and manages the group mood.',desc:'Tracks how people feel and adjusts to keep things working socially. Values shared norms and harmony.',like:'The host who spots the one guest standing alone and walks over.'}
+};
+const LC={N:'blue',S:'green',T:'orange',F:'pink'};
+const TEMP={
+  sj:{name:'Guardians',short:'SJ',color:'green',p:'13%',desc:'Dependable, rule-aware, protective of what works.'},
+  sp:{name:'Artisans',short:'SP',color:'yellow',p:'30%',desc:'Hands-on, adaptable, tuned to the present.'},
+  nf:{name:'Idealists',short:'NF',color:'pink',p:'13%',desc:'Meaning-seeking, people-focused, values-led.'},
+  nt:{name:'Rationals',short:'NT',color:'blue',p:'12%',desc:'Strategic, sceptical, competence-driven.'}
+};
+const groupOf=c=>c[1]==='N'?(c[2]==='T'?'nt':'nf'):(c[3]==='J'?'sj':'sp');
+const POP={ISFJ:13.8,ESFJ:12.3,ISTJ:11.6,ISFP:8.8,ESTJ:8.7,ESFP:8.5,ENFP:8.1,ISTP:5.4,INFP:4.4,ESTP:4.3,INTP:3.3,ENTP:3.2,ENFJ:2.5,INTJ:2.1,ENTJ:1.8,INFJ:1.5};
+const POPTOT=Object.values(POP).reduce((a,b)=>a+b,0);
+
+const RAW=[
+ {code:'INTJ',nick:'Mastermind',stack:['Ni','Te','Fi','Se'],
+  sig:'Works out where things should end up, then plans backwards from there. Independent, long-range, allergic to wasted effort.',
+  tension:'Very sure of the plan, less patient with the people who need convincing.',
+  edge:'Share the reasoning earlier. People resist conclusions they didn’t watch being built.',
+  stress:'Inferior Se takes over: binge-watching, overeating, or fixating on small sensory irritations. The long view disappears.',
+  love:'Selective and loyal. Shows care by solving your problems and planning for a future you share.',
+  fields:'Strategy, research, systems engineering, architecture, law',chars:['Light Yagami','Walter White','Professor Moriarty'],pairs:['ENFP','ENTP']},
+ {code:'INTP',nick:'Architect',stack:['Ti','Ne','Si','Fe'],
+  sig:'Wants to understand how things work at the root. Builds a model, finds the holes in it, rebuilds.',
+  tension:'Loves the theory, struggles with the deadline.',
+  edge:'Ship the 80% version. Real feedback improves the model faster than more thinking does.',
+  stress:'Inferior Fe erupts: feels unappreciated, gets unusually emotional or touchy about what others think.',
+  love:'Low-key and loyal. Shows interest by thinking hard about your problems and sharing odd discoveries.',
+  fields:'Software, mathematics, academic research, philosophy, game design',chars:['L (Death Note)','Sherlock Holmes','Bruce Banner'],pairs:['ENTJ','ESTJ']},
+ {code:'ENTJ',nick:'Fieldmarshal',stack:['Te','Ni','Se','Fi'],
+  sig:'Sees the goal, draws the org chart, starts assigning tasks. Decisive and comfortable being in charge.',
+  tension:'Moves at full speed. Not everyone else does.',
+  edge:'Ask how people are doing before asking how the project is doing.',
+  stress:'Inferior Fi surfaces: sudden hurt feelings, a sense of being unloved, outbursts that surprise even them.',
+  love:'Committed and direct. Shows care by backing your ambitions and clearing obstacles out of your way.',
+  fields:'Executive roles, founding companies, management consulting, law, politics',chars:['Miranda Priestly','Tywin Lannister','Logan Roy'],pairs:['INTP','INFP']},
+ {code:'ENTP',nick:'Inventor',stack:['Ne','Ti','Fe','Si'],
+  sig:'Thinks out loud by arguing. Will take the other side just to see whether an idea survives.',
+  tension:'Great at starting, bored by finishing.',
+  edge:'Pick one idea and stay with it past the fun part.',
+  stress:'Inferior Si: fixates on aches, routine details or past mistakes. Withdraws and turns rigid.',
+  love:'Playful and verbal. Shows interest through banter, new plans and pushing your thinking.',
+  fields:'Startups, product, litigation, journalism, comedy writing',chars:['Tony Stark','Tyrion Lannister','Bugs Bunny'],pairs:['INTJ','INFJ']},
+ {code:'INFJ',nick:'Counselor',stack:['Ni','Fe','Ti','Se'],
+  sig:'Reads people and situations for what’s underneath. Holds strong convictions about how things should be.',
+  tension:'Understands others well. Feels understood rarely.',
+  edge:'Say what you see before you’re completely sure. Waiting means it lands too late.',
+  stress:'Inferior Se: overindulges in food, shopping or screens, and gets irritable about noise and mess.',
+  love:'Deep, private and slow to trust. Shows love by paying close attention to who you actually are.',
+  fields:'Counselling, writing, teaching, nonprofit work, UX research',chars:['Atticus Finch','Remus Lupin','Yoda'],pairs:['ENTP','ENFP']},
+ {code:'INFP',nick:'Healer',stack:['Fi','Ne','Si','Te'],
+  sig:'Runs on personal values and a busy inner life. Idealistic, imaginative, protective of what matters to them.',
+  tension:'Strong convictions, weak interest in logistics.',
+  edge:'Turn a value into a plan with dates on it. Ideals need structure to survive.',
+  stress:'Inferior Te: turns harshly critical and bossy, obsessed with fixing things efficiently.',
+  love:'Romantic and devoted. Lets you into an inner world most people never see.',
+  fields:'Writing, illustration, psychology, advocacy, music',chars:['Frodo Baggins','Luna Lovegood','Amélie Poulain'],pairs:['ENFJ','ENTJ']},
+ {code:'ENFJ',nick:'Teacher',stack:['Fe','Ni','Se','Ti'],
+  sig:'Organises people around a shared purpose. Warm, persuasive, invested in other people’s growth.',
+  tension:'Takes care of everyone and forgets to take care of themselves.',
+  edge:'Let other people help sometimes. Being on the receiving end is not a weakness.',
+  stress:'Inferior Ti: turns coldly critical, nitpicks logic, doubts whether they understand anything.',
+  love:'Warm and invested. Encourages you to become who you want to be.',
+  fields:'Teaching, coaching, HR, politics, community organising',chars:['Mufasa','Albus Dumbledore','Peeta Mellark'],pairs:['INFP','ISFP']},
+ {code:'ENFP',nick:'Champion',stack:['Ne','Fi','Te','Si'],
+  sig:'Enthusiastic and curious, sees potential in people and ideas. Energy goes up around anything new.',
+  tension:'Wants to do everything. Finishes some of it.',
+  edge:'Say no to good options so the great ones get finished.',
+  stress:'Inferior Si: obsesses over details or health worries and loses the usual optimism.',
+  love:'Expressive and affectionate. Makes you feel like the most interesting person they know.',
+  fields:'Marketing, journalism, acting, counselling, startups',chars:['Anne Shirley','Ted Lasso','Michael Scott'],pairs:['INTJ','INFJ']},
+ {code:'ISTJ',nick:'Inspector',stack:['Si','Te','Fi','Ne'],
+  sig:'Reliable and thorough, does what they said they would. Trusts what has been tested.',
+  tension:'Dependable to a fault. Slow to change a system that has worked.',
+  edge:'Treat a new method as an experiment worth running, not a threat to what works.',
+  stress:'Inferior Ne: catastrophises, imagines every way things could go wrong, can’t stop the what-ifs.',
+  love:'Steady and committed. Shows love through consistency and keeping promises.',
+  fields:'Accounting, auditing, law, the military, operations, civil engineering',chars:['Eddard Stark','Dana Scully','Hermione Granger'],pairs:['ESFP','ESTP']},
+ {code:'ISFJ',nick:'Protector',stack:['Si','Fe','Ti','Ne'],
+  sig:'Notices what people need and handles it without being asked. Remembers details about everyone.',
+  tension:'Looks after everyone else first, then runs out of energy.',
+  edge:'State your own preferences plainly. People can’t meet needs they don’t know about.',
+  stress:'Inferior Ne: spirals into worst-case thinking and gloom about the future.',
+  love:'Attentive and devoted. Shows love through practical care and remembering small things.',
+  fields:'Nursing, teaching, social work, librarianship, administration',chars:['Samwise Gamgee','Dr. Watson','Marge Simpson'],pairs:['ESTP','ESFP']},
+ {code:'ESTJ',nick:'Supervisor',stack:['Te','Si','Ne','Fi'],
+  sig:'Sets clear rules and runs things efficiently. Expects everyone to do their part.',
+  tension:'Values order and can steamroll people who work differently.',
+  edge:'Ask why something was done differently before deciding it was done wrong.',
+  stress:'Inferior Fi: feels unappreciated and becomes emotional or hypersensitive, often in private.',
+  love:'Loyal and traditional. Shows love by providing stability and showing up.',
+  fields:'Management, operations, law enforcement, project management, school administration',chars:['Dwight Schrute','Monica Geller','Hank Hill'],pairs:['ISFP','INTP']},
+ {code:'ESFJ',nick:'Provider',stack:['Fe','Si','Ne','Ti'],
+  sig:'Holds groups together. Hosts, remembers birthdays, makes sure nobody is left out.',
+  tension:'Wants everyone happy and takes disagreement personally.',
+  edge:'Conflict doesn’t always threaten a relationship. Sometimes it’s how it gets better.',
+  stress:'Inferior Ti: becomes harshly critical and over-analytical, picking apart other people’s reasoning.',
+  love:'Generous and attentive. Shows love through acts of service and making you feel welcome.',
+  fields:'Healthcare, teaching, event planning, hospitality, HR',chars:['Molly Weasley','Leslie Knope','Cher Horowitz'],pairs:['ISFP','ISTP']},
+ {code:'ISTP',nick:'Crafter',stack:['Ti','Se','Ni','Fe'],
+  sig:'Learns by taking things apart. Calm in a crisis, good with tools, prefers doing to discussing.',
+  tension:'Highly skilled, hard to read.',
+  edge:'Say how you feel in one plain sentence. People can’t always read it off your actions.',
+  stress:'Inferior Fe: unusually emotional, feels misunderstood, stung by criticism.',
+  love:'Quiet and practical. Shows love by fixing things and turning up when it matters.',
+  fields:'Engineering, mechanics, surgery, piloting, forensics',chars:['Arya Stark','James Bond','Lara Croft'],pairs:['ESFJ','ESTJ']},
+ {code:'ISFP',nick:'Composer',stack:['Fi','Se','Ni','Te'],
+  sig:'Lives by their own values and expresses them through what they make. Gentle, observant, private.',
+  tension:'Strong values, little interest in explaining them.',
+  edge:'Make your values visible through work other people can see.',
+  stress:'Inferior Te: tries to force control, turns blunt and critical, overworks.',
+  love:'Warm and present, attentive to small sensory things. Shows love through gestures more than speeches.',
+  fields:'Design, music, cooking, veterinary work, physiotherapy',chars:['Harry Potter','Edward Scissorhands','Hiccup'],pairs:['ENFJ','ESFJ']},
+ {code:'ESTP',nick:'Promoter',stack:['Se','Ti','Fe','Ni'],
+  sig:'Acts fast, reads the room, enjoys a bit of risk. Solves problems in real time.',
+  tension:'Excellent in the moment, less interested in next quarter.',
+  edge:'Before the next move, ask what it looks like six months out.',
+  stress:'Inferior Ni: turns paranoid, reads dark meanings into events, fixates on one bad outcome.',
+  love:'Fun and physical. Shows love through shared experiences and spontaneity.',
+  fields:'Sales, entrepreneurship, emergency medicine, sport, real estate',chars:['Ferris Bueller','Han Solo','Bart Simpson'],pairs:['ISFJ','ISTJ']},
+ {code:'ESFP',nick:'Performer',stack:['Se','Fi','Te','Ni'],
+  sig:'Brings energy into a room and makes ordinary things fun. Generous, spontaneous, very present.',
+  tension:'Lives for now. The future gets less attention.',
+  edge:'A small amount of planning protects the fun later.',
+  stress:'Inferior Ni: gloomy predictions, a feeling the future is closing in, withdrawal.',
+  love:'Affectionate and generous. Makes time together feel like an event.',
+  fields:'Performing arts, hospitality, sales, events, early-years teaching',chars:['Pippin Took','Jack Dawson','Elle Woods'],pairs:['ISFJ','ISTJ']}
+];
+const T={}; RAW.forEach(t=>{t.group=groupOf(t.code);T[t.code]=t;});
+const TABLE=[['ISTJ','ISFJ','INFJ','INTJ'],['ISTP','ISFP','INFP','INTP'],['ESTP','ESFP','ENFP','ENTP'],['ESTJ','ESFJ','ENFJ','ENTJ']];
+const ORDER=TABLE.flat();
+const FLIP={Ni:'Ne',Ne:'Ni',Si:'Se',Se:'Si',Ti:'Te',Te:'Ti',Fi:'Fe',Fe:'Fi'};
+const ROLES=[['Dominant','Hero'],['Auxiliary','Parent'],['Tertiary','Child'],['Inferior','Anima / Animus']];
+const AB=['Dom','Aux','Tert','Inf'];
+const SHADOW=[['Opposing','Shows up as stubbornness and point-scoring.'],['Critical parent','Harsh, cutting judgement of self or others.'],['Trickster','A blind spot. Breeds confusion and double binds.'],['Demon','Rare. Destructive under extreme stress.']];
+const WM=[100,70,44,24], WS=[17,14,11,8];
+const PROF=[1,.7,.44,.24,.17,.14,.11,.08];
+const RADAR=['Ni','Ne','Ti','Te','Se','Si','Fe','Fi']; // opposites sit across the circle
+const AXES=[
+  {a:'Ni',b:'Se',kind:'Perceiving',title:'Forecast vs window',m:'A weather forecast and a window. One tells you it will rain on Thursday, the other tells you it is raining now. You can’t stare at both at once.'},
+  {a:'Ne',b:'Si',kind:'Perceiving',title:'New trail vs old map',m:'One wants to see where the unmarked path goes. The other knows which route got everyone home last time.'},
+  {a:'Te',b:'Fi',kind:'Judging',title:'Scoreboard vs compass',m:'One asks whether it works and can be measured. The other asks whether you can stand behind it.'},
+  {a:'Ti',b:'Fe',kind:'Judging',title:'Proof vs dinner party',m:'One asks whether the argument holds. The other asks whether everyone at the table is all right.'}
+];
+const DICH=[['E','I','Energy'],['S','N','Information'],['T','F','Decisions'],['J','P','Structure']];
+
+/* ---------------- shapes & glyphs ---------------- */
+const r2=n=>+n.toFixed(2);
+function shape(fn,cx,cy,s){
+  const col=LC[fn[0]], intro=fn[1]==='i', h=s/2, sw=r2(Math.max(1.2,s/26));
+  const paint=intro?`class="gs fill-${col}"`:`class="gs stroke-${col}" fill="url(#ht-${col})" stroke-width="${sw}"`;
+  switch(fn[0]){
+    case 'N':return `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(h)}" ${paint}/>`;
+    case 'S':return `<rect x="${r2(cx-h)}" y="${r2(cy-h)}" width="${r2(s)}" height="${r2(s)}" ${paint}/>`;
+    case 'T':return `<polygon points="${r2(cx)},${r2(cy-h)} ${r2(cx+h)},${r2(cy+h)} ${r2(cx-h)},${r2(cy+h)}" ${paint}/>`;
+    default:return `<path d="M${r2(cx-h)},${r2(cy+h/2)} A${r2(h)},${r2(h)} 0 0 1 ${r2(cx+h)},${r2(cy+h/2)} Z" ${paint}/>`;
+  }
+}
+const mini=(fn,size=16)=>`<svg viewBox="0 0 20 20" width="${size}" height="${size}" aria-hidden="true">${shape(fn,10,fn[0]==='F'?12:10,fn[0]==='F'?18:15)}</svg>`;
+const GP=[[42,56,60],[67,40,42],[77,77,22],[19,19,12]];
+const glyph=(t,size,cls='')=>`<svg viewBox="0 0 100 100" width="${size}" height="${size}" class="${cls}" aria-hidden="true">${t.stack.map((fn,i)=>shape(fn,...GP[i])).join('')}</svg>`;
+const tcol=t=>TEMP[t.group].color;
+const profile=t=>{const p={};t.stack.forEach((f,i)=>{p[f]=PROF[i];p[FLIP[f]]=PROF[i+4];});return p;};
+
+/* ---------------- theme ---------------- */
+const modeBtn=$('#mode');
+function setMode(m){document.documentElement.classList.toggle('dark',m==='dark');modeBtn.textContent=m==='dark'?'Light mode':'Dark mode';modeBtn.setAttribute('aria-pressed',String(m==='dark'));store.set('ca3_mode',m);}
+setMode(store.get('ca3_mode','light')==='dark'?'dark':'light');
+modeBtn.addEventListener('click',()=>setMode(document.documentElement.classList.contains('dark')?'light':'dark'));
+
+/* ---------------- tabs ---------------- */
+const TABS=['atlas','compare','pairs','quiz','axes','functions','fine'];
+function showTab(k){
+  $$('.tab').forEach(b=>{const on=b.dataset.tab===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));});
+  TABS.forEach(x=>{$('#tab-'+x).hidden=x!==k;});
+  store.set('ca3_tab',k);
+}
+$$('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+/* ---------------- tooltip ---------------- */
+const tip=$('#tip');
+function showTip(html,e){tip.innerHTML=html;tip.hidden=false;moveTip(e);}
+function moveTip(e){const w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;tip.style.left=x+'px';tip.style.top=y+'px';}
+const hideTip=()=>{tip.hidden=true;};
+
+/* ================= ATLAS ================= */
+let current=store.get('ca3_type','INTJ'); if(!T[current]) current='INTJ';
+function buildTable(){
+  const COLS=['ST','SF','NF','NT'], ROWS=['IJ','IP','EP','EJ'];
+  let h='<div class="tt-lab" aria-hidden="true"></div>'+COLS.map(c=>`<div class="tt-lab">${c}</div>`).join('');
+  TABLE.forEach((row,r)=>{
+    h+=`<div class="tt-lab">${ROWS[r]}</div>`;
+    row.forEach(code=>{const t=T[code],g=TEMP[t.group];
+      h+=`<button class="cell" data-code="${code}" style="--c:var(--${g.color});--p:${g.p}" aria-label="${code}, ${t.nick}">${glyph(t,64,'g')}<span class="code">${code}</span><span class="nick">${t.nick}</span><span class="pct">${POP[code]}%</span></button>`;});
+  });
+  $('#tt').innerHTML=h;
+  $$('#tt .cell').forEach(b=>b.addEventListener('click',()=>openType(b.dataset.code,true)));
+  $('#legend').innerHTML=`<span><b>Glyphs:</b></span><span>${mini('Ni')}N intuition</span><span>${mini('Si')}S sensing</span><span>${mini('Ti')}T thinking</span><span>${mini('Fi')}F feeling</span><span>${mini('Ne')}dotted = extraverted</span><span>biggest = dominant</span>`;
+  $('#legend2').innerHTML=`<span><b>Tint:</b></span>`+['sj','sp','nf','nt'].map(k=>`<span><i class="sw" style="--c:var(--${TEMP[k].color})"></i>${TEMP[k].name} ${TEMP[k].short}</span>`).join('');
+}
+
+function stackRow(fn,top,sub,w,cls,cap,sh){
+  return `<div class="srow${sh?' sh':''}"><div class="srole">${top}<small>${sub}</small></div><div><div class="bar"><span class="fill ${cls}" style="--c:var(--${LC[fn[0]]});width:${w}%"></span><b class="tag">${fn}</b></div><div class="bcap">${cap}</div></div></div>`;
+}
+function radarSvg(list,label){
+  const c=150,R=106; let s='';
+  for(let k=1;k<=4;k++) s+=`<circle cx="${c}" cy="${c}" r="${R*k/4}" class="grid-c"/>`;
+  RADAR.forEach((f,i)=>{const a=Math.PI*2*i/8-Math.PI/2;
+    s+=`<line x1="${c}" y1="${c}" x2="${r2(c+R*Math.cos(a))}" y2="${r2(c+R*Math.sin(a))}" class="grid-l"/>`;
+    s+=`<text x="${r2(c+(R+21)*Math.cos(a))}" y="${r2(c+(R+21)*Math.sin(a)+5)}" text-anchor="middle" class="rlab">${f}</text>`;});
+  list.forEach(({t,color,dash})=>{const p=profile(t);
+    const pts=RADAR.map((f,i)=>{const a=Math.PI*2*i/8-Math.PI/2;return `${r2(c+R*p[f]*Math.cos(a))},${r2(c+R*p[f]*Math.sin(a))}`;}).join(' ');
+    s+=`<polygon points="${pts}" fill="url(#ht-${color})" class="gs stroke-ink" stroke-width="2"${dash?' stroke-dasharray="6 4"':''} stroke-linejoin="round"/>`;
+    RADAR.forEach((f,i)=>{if(p[f]<.4)return;const a=Math.PI*2*i/8-Math.PI/2;s+=`<circle cx="${r2(c+R*p[f]*Math.cos(a))}" cy="${r2(c+R*p[f]*Math.sin(a))}" r="3.5" class="fill-ink"/>`;});
+  });
+  return `<svg viewBox="0 0 300 300" class="radar" role="img" aria-label="${label}">${s}</svg>`;
+}
+function timeline(t){
+  const X=a=>r2(20+a*(520/60));
+  const segs=[[0,6,-1,'early'],[6,12,0],[12,20,1],[20,35,2],[35,50,3],[50,60,-1,'integration']];
+  let s='';
+  segs.forEach(([a0,a1,i,lab])=>{const x=X(a0),w=r2(X(a1)-X(a0)),mid=r2(x+w/2);
+    if(i<0){s+=`<rect x="${x}" y="36" width="${w}" height="24" fill="url(#hatch)" class="stroke-ink" stroke-width="1" opacity=".55"/><text x="${mid}" y="28" text-anchor="middle" class="tl-lab mut">${lab}</text>`;}
+    else{const fn=t.stack[i],col=LC[fn[0]];
+      s+=fn[1]==='i'?`<rect x="${x}" y="36" width="${w}" height="24" class="fill-${col} stroke-ink" stroke-width="1"/>`:`<rect x="${x}" y="36" width="${w}" height="24" fill="url(#ht-${col})" class="stroke-${col}" stroke-width="1.5"/>`;
+      s+=`<text x="${mid}" y="14" text-anchor="middle" class="tl-tick">${AB[i]}</text><text x="${mid}" y="29" text-anchor="middle" class="tl-lab">${fn}</text>`;}
+  });
+  [0,6,12,20,35,50,60].forEach(a=>{s+=`<line x1="${X(a)}" y1="60" x2="${X(a)}" y2="68" class="stroke-ink" stroke-width="1.5"/><text x="${X(a)}" y="82" text-anchor="middle" class="tl-tick">${a===60?'60+':a}</text>`;});
+  s+=`<text x="20" y="98" class="tl-tick mut">age in years</text>`;
+  return `<svg viewBox="0 0 560 102" class="dg" role="img" aria-label="Rough ages at which each function develops for ${t.code}">${s}</svg>`;
+}
+function loopSvg(t){
+  const xs=[70,210,350,490],y=100,r=30; let s='';
+  s+=`<line x1="${xs[0]+r+3}" y1="${y}" x2="${xs[1]-r-6}" y2="${y}" class="stroke-ink" stroke-width="2.5" marker-end="url(#ar-ink)"/>`;
+  s+=`<text x="${(xs[0]+xs[1])/2}" y="${y-8}" text-anchor="middle" class="dg-role">usual route</text>`;
+  s+=`<line x1="${xs[1]+r+3}" y1="${y}" x2="${xs[2]-r-3}" y2="${y}" class="stroke-hair" stroke-width="2"/>`;
+  s+=`<line x1="${xs[2]+r+3}" y1="${y}" x2="${xs[3]-r-3}" y2="${y}" class="stroke-hair" stroke-width="2"/>`;
+  s+=`<path d="M${xs[0]+8},${y-r-3} Q${(xs[0]+xs[2])/2},${y-r-72} ${xs[2]-8},${y-r-3}" fill="none" class="stroke-ink" stroke-width="2" stroke-dasharray="6 5" marker-start="url(#ar-ink)" marker-end="url(#ar-ink)"/>`;
+  s+=`<text x="${(xs[0]+xs[2])/2}" y="${y-r-46}" text-anchor="middle" class="dg-lab">loop: ${t.stack[0]} ↔ ${t.stack[2]}</text>`;
+  s+=`<path d="M${xs[3]-8},${y+r+3} Q${(xs[0]+xs[3])/2},${y+r+82} ${xs[0]+8},${y+r+3}" fill="none" class="stroke-orange" stroke-width="3" marker-end="url(#ar-or)"/>`;
+  s+=`<text x="${(xs[0]+xs[3])/2}" y="${y+r+64}" text-anchor="middle" class="dg-lab">grip: ${t.stack[3]} takes the wheel</text>`;
+  t.stack.forEach((fn,i)=>{s+=`<circle cx="${xs[i]}" cy="${y}" r="${r}" class="node-${LC[fn[0]]} stroke-ink" stroke-width="2"/><text x="${xs[i]}" y="${y+3}" text-anchor="middle" class="dg-code">${fn}</text><text x="${xs[i]}" y="${y+17}" text-anchor="middle" class="dg-role">${ROLES[i][0].toLowerCase()}</text>`;});
+  return `<svg viewBox="0 0 560 200" class="dg" role="img" aria-label="Loop and grip patterns for ${t.code}">${s}</svg>`;
+}
+
+function renderDetail(code){
+  const t=T[code],g=TEMP[t.group],[d,a,te,inf]=t.stack,sh=t.stack.map(f=>FLIP[f]);
+  const introDom=d[1]==='i';
+  const loopTxt=introDom
+    ?`<b>Loop (${d}–${te}).</b> Both are introverted, so ${a}, the function that checks things against the outside world, gets skipped. The result is a closed room: lots of internal processing, little reality-testing.`
+    :`<b>Loop (${d}–${te}).</b> Both are extraverted, so ${a}, the function that steps back to reflect, gets skipped. The result is constant reacting: lots of action, little digestion.`;
+  const main=t.stack.map((fn,i)=>stackRow(fn,ROLES[i][0],ROLES[i][1],WM[i],fn[1]==='i'?'solid':'ht',`<b>${FN[fn].name}.</b> ${FN[fn].short}`,false)).join('');
+  const shadow=sh.map((fn,i)=>stackRow(fn,`${i+5}th`,SHADOW[i][0],WS[i],'hatch',SHADOW[i][1],true)).join('');
+  const pairs=t.pairs.map(p=>`<button class="chip" data-open="${p}"><i class="sw" style="--c:var(--${tcol(T[p])})"></i>${p} · ${T[p].nick}</button>`).join('');
+  $('#detail').innerHTML=`
+    <div class="d-head">
+      <div style="min-width:0">
+        <div class="d-code misreg" data-text="${code}" style="--acc:var(--${g.color==='yellow'?'orange':g.color})">${code}</div>
+        <div class="d-name">The ${t.nick}</div>
+        <div class="d-meta"><span class="t"><i class="sw" style="--c:var(--${g.color})"></i>${g.name} · ${g.short}</span><span>${POP[code]}% of US sample</span></div>
+      </div>
+      <div class="d-glyph">${glyph(t,132,'big')}
+        <div class="anat">${t.stack.map((fn,i)=>`<div>${mini(fn,14)}${fn} ${AB[i].toLowerCase()}</div>`).join('')}</div>
+      </div>
+    </div>
+    <p class="d-sig">${t.sig}</p>
+
+    <div class="block"><div class="h3">The stack <small>Bar length = how much it's relied on</small></div>${main}</div>
+    <div class="block" style="margin-top:18px"><div class="h3">The shadow <small>Same functions, opposite attitude</small></div>${shadow}</div>
+
+    <div class="block"><div class="h3">All eight at a glance <small>Opposite functions face each other</small></div>
+      <div class="split2">${radarSvg([{t,color:g.color}],`Function weights for ${code}`)}
+        <dl class="kv"><dt>Core tension</dt><dd>${t.tension}</dd><dt>Growth edge</dt><dd>${t.edge}</dd><dt>Common fields</dt><dd>${t.fields}.</dd></dl>
+      </div>
+    </div>
+
+    <div class="block"><div class="h3">How the stack develops <small>Grant et al. model, rough ages</small></div>${timeline(t)}</div>
+
+    <div class="block"><div class="h3">When it goes sideways</div>${loopSvg(t)}
+      <div class="loop-txt"><div>${loopTxt}</div><div><b>Grip (${inf}).</b> ${t.stress}</div></div>
+    </div>
+
+    <div class="block duo">
+      <div class="box"><h4>In relationships</h4><p>${t.love}</p></div>
+      <div class="box"><h4>Often typed as</h4><p>${t.chars.join(', ')}</p></div>
+    </div>
+    <div class="block" style="margin-top:20px"><div class="h3">Classic pairings <small>Type lore, not evidence</small></div><div class="chips">${pairs}</div></div>`;
+  $$('#detail [data-open]').forEach(b=>b.addEventListener('click',()=>openType(b.dataset.open,true)));
+}
+function openType(code,scroll){
+  current=code; store.set('ca3_type',code);
+  $$('#tt .cell').forEach(b=>b.classList.toggle('on',b.dataset.code===code));
+  renderDetail(code);
+  if(scroll){const det=$('#detail');if(window.matchMedia('(max-width:980px)').matches||det.getBoundingClientRect().top<0)scrollTo(det);}
+}
+function gotoType(code){showTab('atlas');openType(code,false);scrollTo($('#tt'));}
+
+function buildPop(){
+  const groups={sj:[],sp:[],nf:[],nt:[]};
+  Object.keys(POP).sort((x,y)=>POP[y]-POP[x]).forEach(c=>groups[groupOf(c)].push(c));
+  const seq=[...groups.sj,...groups.sp,...groups.nf,...groups.nt];
+  const N=200,alloc={};let used=0;const rem=[];
+  seq.forEach(c=>{const x=POP[c]/POPTOT*N;alloc[c]=Math.floor(x);used+=alloc[c];rem.push([c,x-alloc[c]]);});
+  rem.sort((p,q)=>q[1]-p[1]);for(let i=0;i<N-used;i++)alloc[rem[i][0]]++;
+  let h='';
+  ['sj','sp','nf','nt'].forEach(k=>groups[k].forEach((c,j)=>{for(let n=0;n<alloc[c];n++)h+=`<i class="wc ${j%2?'ht':'solid'}" data-code="${c}" style="--c:var(--${TEMP[k].color})"></i>`;}));
+  const w=$('#waffle');w.innerHTML=h;
+  const rd=$('#wread'),def=rd.innerHTML;
+  w.addEventListener('mouseover',e=>{const c=e.target.dataset&&e.target.dataset.code;if(!c)return;w.classList.add('hl');$$('.wc',w).forEach(x=>x.classList.toggle('hit',x.dataset.code===c));rd.innerHTML=`<b>${c}</b> ${T[c].nick} · ${POP[c]}% · ${TEMP[groupOf(c)].name}`;});
+  w.addEventListener('mouseleave',()=>{w.classList.remove('hl');rd.innerHTML=def;});
+  w.addEventListener('click',e=>{const c=e.target.dataset&&e.target.dataset.code;if(c)gotoType(c);});
+
+  $('#splits').innerHTML=DICH.map(([l,r],i)=>{const L=ORDER.filter(c=>c[i]===l).reduce((s,c)=>s+POP[c],0)/POPTOT*100;
+    return `<div class="srow2"><span class="L">${l}</span><div class="sbar"><span class="l" style="width:${L.toFixed(1)}%">${L.toFixed(1)}%</span><span class="r">${(100-L).toFixed(1)}%</span></div><span class="L">${r}</span></div>`;}).join('')
+    +`<p class="note">Sensing outnumbers intuition almost three to one. Most type writing online is by and for the intuitive quarter.</p>`;
+  const tp=['sj','sp','nf','nt'].map(k=>[k,ORDER.filter(c=>groupOf(c)===k).reduce((s,c)=>s+POP[c],0)/POPTOT*100]);
+  $('#temps').innerHTML=`<div class="tbar">${tp.map(([k,v])=>`<span class="solid" style="--c:var(--${TEMP[k].color});width:${v.toFixed(1)}%" title="${TEMP[k].name} ${v.toFixed(1)}%"></span>`).join('')}</div>
+    <div class="tlist">${tp.map(([k,v])=>`<div><i class="sw" style="--c:var(--${TEMP[k].color})"></i>${TEMP[k].name}<b>${v.toFixed(1)}%</b></div>`).join('')}</div>
+    <p class="note">${tp.map(([k])=>`${TEMP[k].name}: ${TEMP[k].desc.toLowerCase()}`).join(' ')}</p>`;
+}
+
+/* ================= COMPARE ================= */
+const pickA=$('#pickA'),pickB=$('#pickB');
+ORDER.forEach(c=>{pickA.add(new Option(`${c} · ${T[c].nick}`,c));pickB.add(new Option(`${c} · ${T[c].nick}`,c));});
+function score(a,b){
+  if(a.code===b.code)return{total:85,shared:4,letters:4,classic:false,same:true};
+  const shared=a.stack.filter(f=>b.stack.includes(f)).length,letters=[0,1,2,3].filter(i=>a.code[i]===b.code[i]).length,classic=a.pairs.includes(b.code)||b.pairs.includes(a.code);
+  return{total:Math.min(100,shared*18+letters*4+(classic?22:0)),shared,letters,classic,same:false};
+}
+const axisName=f=>{const x=AXES.find(z=>z.a===f||z.b===f);return `${x.a}–${x.b}`;};
+function verdictFor(a,b,sc){
+  if(sc.same)return 'Same type. Easy mutual understanding, and the same blind spots doubled.';
+  let v;
+  if(sc.shared===4)v=`Same four functions in a different order, so they belong to the same family. Same toolkit, different favourite tool.`;
+  else if(sc.shared===2){const f=a.stack.find(x=>b.stack.includes(x));const perc='NS'.includes(f[0]);v=`They share one axis (${axisName(f)}), so they agree on how to ${perc?'take in information':'make decisions'} and differ on how to ${perc?'make decisions':'take in information'}.`;}
+  else v='No functions in common in the top four. They differ on both how they take in information and how they decide.';
+  if(sc.classic)v+=' Type lore calls this a classic pair: each one’s strongest functions are the other’s weakest.';
+  return v;
+}
+function ladderSvg(a,b){
+  const y=i=>36+i*52,H=36,ax=80,bx=260,W=100;let s='';
+  s+=`<text x="${ax+W/2}" y="22" text-anchor="middle" class="dg-big">${a.code}</text><text x="${bx+W/2}" y="22" text-anchor="middle" class="dg-big">${b.code}</text>`;
+  a.stack.forEach((fa,i)=>b.stack.forEach((fb,j)=>{
+    if(fa===fb)s+=`<line x1="${ax+W}" y1="${y(i)+H/2}" x2="${bx}" y2="${y(j)+H/2}" class="stroke-ink" stroke-width="3"/>`;
+    else if(fa[0]===fb[0])s+=`<line x1="${ax+W}" y1="${y(i)+H/2}" x2="${bx}" y2="${y(j)+H/2}" class="stroke-muted" stroke-width="1.5" stroke-dasharray="2 4"/>`;
+  }));
+  const box=(fn,x,yy)=>`<rect x="${x}" y="${yy}" width="${W}" height="${H}" class="node-${LC[fn[0]]} stroke-ink" stroke-width="2"/><text x="${x+W/2}" y="${yy+H/2+6}" text-anchor="middle" class="dg-code">${fn}</text>`;
+  a.stack.forEach((fn,i)=>{s+=box(fn,ax,y(i))+`<text x="${ax-8}" y="${y(i)+H/2+4}" text-anchor="end" class="dg-side">${AB[i]}</text>`;});
+  b.stack.forEach((fn,i)=>{s+=box(fn,bx,y(i))+`<text x="${bx+W+8}" y="${y(i)+H/2+4}" class="dg-side">${AB[i]}</text>`;});
+  return `<svg viewBox="0 0 440 244" class="dg" role="img" aria-label="Stack alignment of ${a.code} and ${b.code}">${s}</svg>`;
+}
+function vennSvg(a,b,ca,cb){
+  const B=new Set(b.stack),A=new Set(a.stack);
+  const oa=a.stack.filter(f=>!B.has(f)),ob=b.stack.filter(f=>!A.has(f)),both=a.stack.filter(f=>B.has(f));
+  let s=`<circle cx="165" cy="134" r="102" fill="url(#ht-${ca})" class="gs stroke-ink" stroke-width="2"/><circle cx="275" cy="134" r="102" fill="url(#ht-${cb})" class="gs stroke-ink" stroke-width="2"/>`;
+  s+=`<text x="112" y="22" text-anchor="middle" class="dg-big">${a.code} only</text><text x="328" y="22" text-anchor="middle" class="dg-big">${b.code} only</text><text x="220" y="22" text-anchor="middle" class="dg-big">both</text>`;
+  const col=(list,x,lab)=>list.map((f,k)=>{const yy=134+(k-(list.length-1)/2)*46;return `<rect x="${x-24}" y="${yy-14}" width="48" height="26" class="fill-sheet stroke-ink" stroke-width="1.5"/><text x="${x}" y="${yy+5}" text-anchor="middle" class="dg-code">${f}</text><text x="${x}" y="${yy+24}" text-anchor="middle" class="dg-role">${lab(f)}</text>`;}).join('');
+  s+=col(oa,108,f=>AB[a.stack.indexOf(f)].toLowerCase());
+  s+=col(both,220,f=>`${AB[a.stack.indexOf(f)].toLowerCase()} / ${AB[b.stack.indexOf(f)].toLowerCase()}`);
+  s+=col(ob,332,f=>AB[b.stack.indexOf(f)].toLowerCase());
+  if(!both.length)s+=`<text x="220" y="139" text-anchor="middle" class="dg-lab">none</text>`;
+  return `<svg viewBox="0 0 440 250" class="dg" role="img" aria-label="Shared functions of ${a.code} and ${b.code}">${s}</svg>`;
+}
+function renderCompare(){
+  const a=T[pickA.value],b=T[pickB.value];store.set('ca3_cmp',a.code+','+b.code);
+  const ca=tcol(a),cb=tcol(b)===ca?'orange':tcol(b);
+  $('#cmpHead').innerHTML=`<div class="cmp-side">${glyph(a,96)}<div><div class="cmp-code misreg" data-text="${a.code}" style="--acc:var(--${ca==='yellow'?'orange':ca})">${a.code}</div><div class="cmp-nick">The ${a.nick} · ${TEMP[a.group].name}</div></div></div><div class="cmp-x" aria-hidden="true">×</div><div class="cmp-side r">${glyph(b,96)}<div><div class="cmp-code misreg" data-text="${b.code}" style="--acc:var(--${cb==='yellow'?'orange':cb})">${b.code}</div><div class="cmp-nick">The ${b.nick} · ${TEMP[b.group].name}</div></div></div>`;
+  $('#ladder').innerHTML=ladderSvg(a,b);
+  $('#venn').innerHTML=vennSvg(a,b,ca,cb);
+  $('#cmpRadar').innerHTML=radarSvg([{t:a,color:ca},{t:b,color:cb,dash:true}],`Overlaid function weights for ${a.code} and ${b.code}`);
+  $('#cmpRadarKey').innerHTML=`<span><i style="border-top-style:solid"></i>${a.code}</span><span><i style="border-top-style:dashed"></i>${b.code}</span>`;
+  const sc=score(a,b);
+  $('#verdict').textContent=verdictFor(a,b,sc);
+  $('#letters').innerHTML=DICH.map(([l,r,name],i)=>{const la=a.code[i],lb=b.code[i],same=la===lb;return `<span class="L${same?' same':''}">${la}</span><span class="mid">${name} · ${same?'same':'different'}</span><span class="L${same?' same':''}">${lb}</span>`;}).join('');
+  $('#score').innerHTML=sc.same?`<tr class="tot"><td>Same type</td><td>85</td></tr>`:
+    `<tr><td>Shared functions: ${sc.shared} × 18</td><td>${sc.shared*18}</td></tr><tr><td>Matching letters: ${sc.letters} × 4</td><td>${sc.letters*4}</td></tr><tr><td>Classic pair bonus</td><td>${sc.classic?22:0}</td></tr><tr class="tot"><td>Overlap score</td><td>${sc.total}</td></tr>`;
+}
+pickA.addEventListener('change',renderCompare);pickB.addEventListener('change',renderCompare);
+$('#swap').addEventListener('click',()=>{const x=pickA.value;pickA.value=pickB.value;pickB.value=x;renderCompare();});
+$('#shuffle').addEventListener('click',()=>{const a=ORDER[Math.floor(Math.random()*16)];let b=a;while(b===a)b=ORDER[Math.floor(Math.random()*16)];pickA.value=a;pickB.value=b;renderCompare();});
+function openCompare(a,b){pickA.value=a;pickB.value=b;renderCompare();showTab('compare');window.scrollTo({top:0,behavior:reduce?'auto':'smooth'});}
+
+/* ================= PAIRINGS ================= */
+let rankFor=store.get('ca3_rank','INTJ');if(!T[rankFor])rankFor='INTJ';
+function buildHeatmap(){
+  let h='<table class="hm"><thead><tr><th></th>'+ORDER.map(c=>`<th class="ch"><span>${c}</span></th>`).join('')+'</tr></thead><tbody>';
+  ORDER.forEach(r=>{h+=`<tr><th class="rh" data-r="${r}">${r}</th>`;
+    ORDER.forEach(c=>{const sc=score(T[r],T[c]);h+=`<td data-a="${r}" data-b="${c}" class="${r===c?'self':''}"><i style="--o:${(0.06+0.94*sc.total/85).toFixed(2)}"></i></td>`;});
+    h+='</tr>';});
+  h+='</tbody></table>';
+  const m=$('#hm');m.innerHTML=h;
+  m.addEventListener('mouseover',e=>{const td=e.target.closest('td');if(!td)return;const a=T[td.dataset.a],b=T[td.dataset.b],sc=score(a,b);
+    showTip(`<b>${a.code} × ${b.code}</b><br>${sc.same?'Same type':`${sc.shared} shared functions · ${sc.letters} matching letters${sc.classic?' · classic pair':''}`}<br>Score ${sc.total}`,e);});
+  m.addEventListener('mousemove',e=>{if(!tip.hidden)moveTip(e);});
+  m.addEventListener('mouseleave',hideTip);
+  m.addEventListener('click',e=>{const td=e.target.closest('td');if(td){hideTip();openCompare(td.dataset.a,td.dataset.b);return;}const th=e.target.closest('th.rh');if(th)renderRank(th.dataset.r);});
+}
+function renderRank(code){
+  rankFor=code;store.set('ca3_rank',code);
+  $$('#hm th.rh').forEach(x=>x.classList.toggle('on',x.dataset.r===code));
+  $('#rankTitle').textContent=`Ranked for ${code}`;
+  const t=T[code];
+  const list=ORDER.filter(c=>c!==code).map(c=>[c,score(t,T[c])]).sort((p,q)=>q[1].total-p[1].total||POP[q[0]]-POP[p[0]]);
+  $('#rank').innerHTML=list.map(([c,sc])=>{const w=(sc.total/85*100).toFixed(1);return `<button class="rank-row" data-c="${c}"><span class="rcode">${c}</span><span class="rbar" style="--w:${w}%"><span class="${tcol(T[c])==='yellow'?'ht':'solid'}" style="--c:var(--${tcol(T[c])});width:${w}%"></span>${sc.classic?'<em>classic pair</em>':''}</span><span class="rnum">${sc.total}</span></button>`;}).join('')
+    +`<p class="note">Bars coloured by temperament. Click a row to compare it with ${code}.</p>`;
+  $$('#rank .rank-row').forEach(b=>b.addEventListener('click',()=>openCompare(code,b.dataset.c)));
+}
+
+/* ================= QUIZ ================= */
+const QS=[
+ {q:'You arrive at a party where you know two people. Two hours later you are most likely…',a:['Deep in one long conversation with someone new.','I'],b:['Working the room. You’ve met half the guests.','E']},
+ {q:'A friend asks how your week went. You start with…',a:['The overall feel of it, or a pattern you noticed.','N'],b:['What happened, roughly in order.','S']},
+ {q:'A colleague’s proposal has a real flaw, and it clearly matters to them. You…',a:['Name the flaw plainly. The plan has to be right.','T'],b:['Raise it carefully so they don’t feel flattened.','F']},
+ {q:'Sunday evening. Your picture of the week ahead is…',a:['Fairly open. Monday can sort itself out.','P'],b:['Mapped. You know what Monday morning looks like.','J']},
+ {q:'You finally get a free evening. What actually recharges you?',a:['Seeing people you like.','E'],b:['Time on your own.','I']},
+ {q:'Reading a novel, you get most from…',a:['The concrete detail: places, textures, what people do.','S'],b:['The ideas underneath and what the story is saying.','N']},
+ {q:'A decision with mixed evidence. You lean on…',a:['How it will affect the people involved.','F'],b:['What the reasoning says once the noise is stripped out.','T']},
+ {q:'Your calendar for the coming week is…',a:['Mostly blocked out already.','J'],b:['Loose. You’ll fit things in as they come.','P']},
+ {q:'In meetings you tend to…',a:['Think first and speak once it’s worked out.','I'],b:['Think by talking. The idea sharpens as you say it.','E']},
+ {q:'Learning a new tool, you prefer…',a:['The big picture first. Details can come later.','N'],b:['Step-by-step instructions with examples.','S']},
+ {q:'A friend vents about a problem. Your first instinct is to…',a:['Help them fix it.','T'],b:['Make sure they feel heard.','F']},
+ {q:'A deadline is two weeks out. You…',a:['Do your best work in the final rush.','P'],b:['Start now and finish early.','J']},
+ {q:'After a draining day, you want to…',a:['Talk it through with someone.','E'],b:['Be left alone for a while.','I']},
+ {q:'People who know you would call you…',a:['Practical, grounded, dependable.','S'],b:['Imaginative, unusual, future-minded.','N']},
+ {q:'Giving honest feedback to a friend, you prioritise…',a:['Keeping the relationship intact.','F'],b:['Being accurate, even if it stings.','T']},
+ {q:'Planning a trip, you’d rather have…',a:['An itinerary that covers most days.','J'],b:['A couple of anchors and room to improvise.','P']},
+ {q:'A Saturday with nothing planned feels…',a:['A little empty. You’ll message people by noon.','E'],b:['Like a gift.','I']},
+ {q:'You trust more…',a:['Your hunch about where things are heading.','N'],b:['What you’ve seen work before.','S']},
+ {q:'Which compliment lands better?',a:['“You’re really sharp.”','T'],b:['“You’re really kind.”','F']},
+ {q:'Your desk right now is…',a:['Organised chaos. You know where things are.','P'],b:['Tidy. Things have a place.','J']}
+];
+let answers=[];
+function renderQuiz(){
+  const sheet=$('#sheet'),i=answers.length;
+  if(i<QS.length){const q=QS[i];
+    sheet.innerHTML=`<div class="sheet-top"><span>FORM CA-20 · Answer sheet</span><span>Item ${String(i+1).padStart(2,'0')} of ${QS.length}</span></div>
+      <div class="bubbles" aria-hidden="true">${QS.map((_,k)=>`<i class="${k<i?'done':k===i?'now':''}"></i>`).join('')}</div>
+      <h2 class="qtext">${q.q}</h2>
+      <button class="opt" data-l="${q.a[1]}"><span class="bub">A</span><span>${q.a[0]}</span></button>
+      <button class="opt" data-l="${q.b[1]}"><span class="bub">B</span><span>${q.b[0]}</span></button>
+      <div class="sheet-foot"><button class="linkbtn" id="qBack" ${i?'':'disabled'}>← Previous item</button><span>Pick the one that’s true more often, not the one you’d like to be.</span></div>`;
+    $$('.opt',sheet).forEach(b=>b.addEventListener('click',()=>{answers.push(b.dataset.l);renderQuiz();}));
+    $('#qBack').addEventListener('click',()=>{answers.pop();renderQuiz();});
+    return;
+  }
+  const cnt={};answers.forEach(l=>cnt[l]=(cnt[l]||0)+1);
+  const code=DICH.map(([l,r])=>(cnt[l]||0)>=(cnt[r]||0)?l:r).join('');
+  const t=T[code],g=TEMP[t.group];store.set('ca3_result',code);
+  const words=['','','','slight','clear','very clear'];
+  const rows=DICH.map(([l,r,name])=>{const nl=cnt[l]||0,nr=cnt[r]||0,win=nl>=nr?l:r,n=Math.max(nl,nr),w=((n-2.5)/2.5*50).toFixed(0);
+    const left=win===l;return `<div class="pci-row"><span class="L${left?' win':''}">${l}</span><div class="track"><span class="f solid" style="--c:var(--${g.color==='yellow'?'orange':g.color});${left?`right:50%`:`left:50%`};width:${w}%"></span></div><span class="L${left?'':' win'}">${r}</span><span class="pci-cap">${name}: ${words[n]} preference for ${win} (${n} of 5)</span></div>`;}).join('');
+  $('#sheet').innerHTML=`<div class="sheet-top"><span>FORM CA-20 · Result</span><span>20 of 20 answered</span></div>
+    <div class="res-head">${glyph(t,128)}<div><div class="res-code misreg" data-text="${code}" style="--acc:var(--${g.color==='yellow'?'orange':g.color})">${code}</div><div class="d-name">The ${t.nick}</div></div></div>
+    <p class="d-sig" style="margin-top:0">${t.sig}</p>
+    <div class="h3" style="margin-top:20px">Preference clarity <small>Bars grow from the midline</small></div>${rows}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><button class="btn" id="qOpen">Open ${code} in the type table</button><button class="btn alt" id="qRetake">Start over</button></div>
+    <p class="note">Twenty forced-choice items give a sketch, not a measurement. If a letter came out slight, read both types and see which one fits.</p>`;
+  $('#qOpen').addEventListener('click',()=>gotoType(code));
+  $('#qRetake').addEventListener('click',()=>{answers=[];renderQuiz();});
+}
+
+/* ================= AXES ================= */
+function buildAxes(){
+  const famOf=t=>{const ax=t.stack.map(f=>AXES.findIndex(x=>x.a===f||x.b===f));return [Math.min(...ax.filter(k=>k<2)),Math.min(...ax.filter(k=>k>1))];};
+  let h=`<div class="fh"></div><div class="fh">Te – Fi<br>scoreboard vs compass</div><div class="fh">Ti – Fe<br>proof vs dinner party</div>`;
+  [0,1].forEach(p=>{h+=`<div class="fh">${AXES[p].a} – ${AXES[p].b}<br>${AXES[p].title.toLowerCase()}</div>`;
+    [2,3].forEach(j=>{const list=ORDER.filter(c=>{const f=famOf(T[c]);return f[0]===p&&f[1]===j;});
+      h+=`<div><div class="fam-cap">${AXES[p].a}–${AXES[p].b} + ${AXES[j].a}–${AXES[j].b}</div><div class="fam-cell">${list.map(c=>`<button class="fam-t" data-c="${c}" aria-label="Open ${c}">${glyph(T[c],58)}<b>${c}</b></button>`).join('')}</div></div>`;});
+  });
+  $('#fam').innerHTML=h;
+  $$('#fam .fam-t').forEach(b=>b.addEventListener('click',()=>gotoType(b.dataset.c)));
+
+  $('#axes').innerHTML=AXES.map((x,k)=>{
+    const carriers=ORDER.filter(c=>T[c].stack.includes(x.a));
+    return `<div class="axis" data-k="${k}">
+      <div class="axis-k">${x.kind} axis · carried by 8 types</div>
+      <div class="axis-t">${x.a} <span style="font-weight:300">vs</span> ${x.b}</div>
+      <p class="axis-m">${x.m}</p>
+      <svg viewBox="0 0 400 172" class="dg" role="img" aria-label="Seesaw between ${x.a} and ${x.b}">
+        <line x1="40" y1="162" x2="360" y2="162" class="stroke-ink" stroke-width="2"/>
+        <polygon points="200,118 174,162 226,162" class="fill-ink"/>
+        <g class="beam">
+          <rect x="56" y="113" width="288" height="10" class="fill-ink"/>
+          ${shape(x.a,92,113-24,46)}${shape(x.b,308,113-24,46)}
+          <text x="92" y="${113-56}" text-anchor="middle" class="dg-code">${x.a}</text>
+          <text x="308" y="${113-56}" text-anchor="middle" class="dg-code">${x.b}</text>
+        </g>
+      </svg>
+      <div class="poles"><div><b>${x.a}</b> ${FN[x.a].short}</div><div><b>${x.b}</b> ${FN[x.b].short}</div></div>
+      <div class="chips">${carriers.map(c=>`<button class="chip" data-c="${c}">${c}</button>`).join('')}</div>
+      <p class="axis-read"></p>
+    </div>`;}).join('');
+  $$('#axes .axis').forEach(card=>{
+    const x=AXES[+card.dataset.k],beam=$('.beam',card),read=$('.axis-read',card);
+    const pick=c=>{const t=T[c],pa=t.stack.indexOf(x.a),pb=t.stack.indexOf(x.b),gap=Math.abs(pa-pb);
+      const ang=(pa<pb?-1:1)*(gap===3?14:5);beam.style.transform=`rotate(${ang}deg)`;
+      $$('.chip',card).forEach(b=>b.classList.toggle('on',b.dataset.c===c));
+      const pref=pa<pb?x.a:x.b;
+      read.textContent=`${c}: ${x.a} is ${ROLES[pa][0].toLowerCase()}, ${x.b} is ${ROLES[pb][0].toLowerCase()}. ${gap===3?'Strong':'Mild'} lean toward ${pref}.`;};
+    $$('.chip',card).forEach(b=>b.addEventListener('click',()=>pick(b.dataset.c)));
+    pick(ORDER.filter(c=>T[c].stack.includes(x.a))[0]);
+  });
+}
+
+/* ================= FUNCTIONS ================= */
+function buildFunctions(){
+  const P=['26%','17%','10%','5%'];
+  let h=`<thead><tr><th>Function</th>${ROLES.map(r=>`<th>${r[0]} <span style="font-weight:400;color:var(--muted)">· ${r[1]}</span></th>`).join('')}</tr></thead><tbody>`;
+  Object.keys(FN).forEach(fn=>{
+    h+=`<tr><th><div class="fnh">${mini(fn,28)}<div><b>${fn}</b><br><span>${FN[fn].name}</span></div></div></th>`;
+    [0,1,2,3].forEach(pos=>{const list=ORDER.filter(c=>T[c].stack[pos]===fn);h+=`<td style="--c:var(--${LC[fn[0]]});--p:${P[pos]}">${list.map(c=>`<button data-c="${c}">${c}</button>`).join(' ')}</td>`;});
+    h+='</tr>';});
+  $('#ptab').innerHTML=h+'</tbody>';
+  $$('#ptab button').forEach(b=>b.addEventListener('click',()=>gotoType(b.dataset.c)));
+  $('#fcards').innerHTML=Object.keys(FN).map(fn=>`<div class="fcard"><div class="top"><svg viewBox="0 0 100 100" aria-hidden="true">${shape(fn,50,fn[0]==='F'?62:50,fn[0]==='F'?92:76)}</svg><span class="fc-code">${fn}</span></div>
+    <div class="fc-name">${FN[fn].name}</div><p>${FN[fn].desc}</p><span class="like mark">${FN[fn].like}</span></div>`).join('');
+}
+
+/* ================= FINE PRINT ================= */
+function buildFine(){
+  const W=300,Hh=150,base=120,X=x=>r2(20+(x+3.5)/7*260);
+  const phi=x=>Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+  const bi=x=>.5*phi((x+1.6)/.55)/.55+.5*phi((x-1.6)/.55)/.55;
+  const area=(f,peak,x0=-3.5,x1=3.5)=>{let d=`M${X(x0)},${base}`;for(let x=x0;x<=x1+1e-9;x+=.05)d+=` L${X(x)},${r2(base-f(x)/peak*92)}`;return d+` L${X(x1)},${base} Z`;};
+  const panel=(ox,title,f,peak,extra)=>`<g transform="translate(${ox},0)"><text x="20" y="16" class="dg-lab">${title}</text>${extra||''}<path d="${area(f,peak)}" fill="url(#ht-blue)" class="gs stroke-ink" stroke-width="2"/><line x1="${X(0)}" y1="22" x2="${X(0)}" y2="${base+4}" class="stroke-ink" stroke-width="1.5" stroke-dasharray="4 3"/><line x1="20" y1="${base}" x2="280" y2="${base}" class="stroke-ink" stroke-width="2"/><text x="24" y="${base+18}" class="dg-code">I</text><text x="276" y="${base+18}" text-anchor="end" class="dg-code">E</text><text x="${X(0)}" y="${base+18}" text-anchor="middle" class="dg-role">cut-off</text></g>`;
+  const mid=`<path d="${area(phi,.3989,-.5,.5)}" class="fill-yellow"/><text x="${X(1.25)}" y="46" class="dg-role">38% of people sit</text><text x="${X(1.25)}" y="58" class="dg-role">within ½ SD of the cut</text>`;
+  $('#figCurve').innerHTML=`<svg viewBox="0 0 600 ${Hh}" class="dg" role="img" aria-label="Bimodal assumption versus a normal distribution of scores">${panel(0,'What type theory implies',bi,bi(1.6))}${panel(300,'What scores look like',phi,.3989,mid)}</svg>`;
+
+  const L=[['E–I',30],['S–N',86],['T–F',142],['J–P',198]];
+  const R=[['Extraversion',22],['Openness',72],['Agreeableness',122],['Conscientiousness',172],['Neuroticism',222]];
+  const links=[[0,0,.74],[1,1,.72],[2,2,.44],[3,3,.49]];
+  let s='';
+  links.forEach(([i,j,rv])=>{const y1=L[i][1]+17,y2=R[j][1]+16;s+=`<line x1="170" y1="${y1}" x2="390" y2="${y2}" class="stroke-ink" stroke-width="${r2(rv*7)}"/><rect x="262" y="${r2((y1+y2)/2-10)}" width="36" height="18" class="fill-sheet"/><text x="280" y="${r2((y1+y2)/2+4)}" text-anchor="middle" class="dg-role" style="font-size:11px">r≈.${String(Math.round(rv*100))}</text>`;});
+  L.forEach(([n,y])=>{s+=`<rect x="20" y="${y}" width="150" height="34" class="node-blue stroke-ink" stroke-width="2"/><text x="95" y="${y+22}" text-anchor="middle" class="dg-code">${n}</text>`;});
+  R.forEach(([n,y],k)=>{const none=k===4;s+=`<rect x="390" y="${y}" width="160" height="32" class="${none?'fill-sheet':'node-pink'} stroke-ink" stroke-width="2" ${none?'stroke-dasharray="5 4"':''}/><text x="470" y="${y+21}" text-anchor="middle" class="dg-lab">${n}</text>`;});
+  s+=`<text x="95" y="18" text-anchor="middle" class="dg-big">MBTI scale</text><text x="470" y="14" text-anchor="middle" class="dg-big">Big Five trait</text><text x="300" y="242" text-anchor="middle" class="dg-role" style="font-size:11px">no MBTI scale →</text>`;
+  $('#figBig5').innerHTML=`<svg viewBox="0 0 570 262" class="dg" role="img" aria-label="Mapping of MBTI scales to Big Five traits">${s}</svg>`;
+}
+
+/* ================= boot ================= */
+buildTable();
+openType(current,false);
+buildPop();
+const cmp=(store.get('ca3_cmp','INTJ,ENFP')||'').split(',');
+pickA.value=T[cmp[0]]?cmp[0]:'INTJ';pickB.value=T[cmp[1]]?cmp[1]:'ENFP';
+renderCompare();
+buildHeatmap();renderRank(rankFor);
+renderQuiz();
+buildAxes();
+buildFunctions();
+buildFine();
+const savedTab=store.get('ca3_tab','atlas');showTab(TABS.includes(savedTab)?savedTab:'atlas');
+})();
+</script>

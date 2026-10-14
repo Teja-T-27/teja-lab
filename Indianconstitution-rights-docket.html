@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Docket — know your rights by deciding cases</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Archivo:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1A1D33;
+  --bg:#EFE9DB;
+  --surface:#F7F3E9;
+  --surface-2:#E6DECC;
+  --line:#CFC5AE;
+  --text:#1A1D33;
+  --text-dim:#5E5A4F;
+  --rose:#B3503F;
+  --brass:#8A6A16;
+  --sage:#426B4C;
+  --shadow:rgba(26,29,51,.13);
+  --radius:3px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14172B;
+    --surface:#1D2140;
+    --surface-2:#262B4F;
+    --line:#39406B;
+    --text:#EDE7DA;
+    --text-dim:#9FA3C0;
+    --rose:#D98071;
+    --brass:#D2A93C;
+    --sage:#7FB38D;
+    --shadow:rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14172B;
+  --surface:#1D2140;
+  --surface-2:#262B4F;
+  --line:#39406B;
+  --text:#EDE7DA;
+  --text-dim:#9FA3C0;
+  --rose:#D98071;
+  --brass:#D2A93C;
+  --sage:#7FB38D;
+  --shadow:rgba(0,0,0,.4);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Archivo,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:720px;margin:0 auto;padding:20px 18px 64px}
+
+/* ---------- masthead ---------- */
+.masthead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.mark{font-family:Marcellus,Georgia,serif;font-size:19px;letter-spacing:.04em;margin:0}
+.mark em{font-style:normal;color:var(--rose)}
+.masthead p{margin:0;font-size:13px;color:var(--text-dim);flex:1 1 180px}
+.theme-btn{
+  margin-left:auto;background:none;border:1px solid var(--line);color:var(--text-dim);
+  border-radius:var(--radius);padding:4px 10px;font:inherit;font-size:12px;cursor:pointer;
+}
+.theme-btn:hover{color:var(--text);border-color:var(--text-dim)}
+
+/* ---------- mode rail ---------- */
+.rail{display:flex;gap:0;margin:0 0 26px;border-bottom:1px solid var(--line);overflow-x:auto}
+.rail button{
+  background:none;border:none;border-bottom:2px solid transparent;
+  font:inherit;font-size:14px;font-weight:500;color:var(--text-dim);
+  padding:12px 0;margin-right:26px;cursor:pointer;white-space:nowrap;
+}
+.rail button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--rose)}
+.rail button:hover{color:var(--text)}
+
+/* ---------- shared case card ---------- */
+.docket-no{
+  font-family:Marcellus,Georgia,serif;font-size:13px;color:var(--brass);
+  letter-spacing:.08em;margin:0 0 10px;
+}
+.scenario{
+  font-family:Marcellus,Georgia,serif;
+  font-size:clamp(20px,3.6vw,27px);line-height:1.38;margin:0 0 26px;
+  max-width:36ch;
+}
+.prompt{font-size:13px;color:var(--text-dim);margin:0 0 10px}
+
+.choices{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.choice{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  color:var(--text);font:inherit;font-size:15px;font-weight:500;
+  padding:11px 20px;cursor:pointer;transition:border-color .12s,background .12s;
+}
+.choice:hover:not(:disabled){border-color:var(--text-dim)}
+.choice:disabled{cursor:default;opacity:.45}
+.choice.picked{opacity:1}
+.choice.right{border-color:var(--sage);background:color-mix(in srgb,var(--sage) 14%,var(--surface));color:var(--text)}
+.choice.wrong{border-color:var(--rose);background:color-mix(in srgb,var(--rose) 14%,var(--surface));color:var(--text)}
+
+/* article grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-bottom:8px}
+.grid .choice{padding:12px 6px;text-align:center;font-family:Marcellus,Georgia,serif;font-size:15px}
+
+/* ---------- verdict ---------- */
+.verdict{margin-top:24px;opacity:0}
+.verdict.show{animation:rise .34s ease-out forwards}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.verdict hr{border:none;height:2px;background:var(--brass);margin:0 0 16px;transform-origin:left;}
+.verdict.show hr{animation:draw .42s ease-out}
+@keyframes draw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.article-no{font-family:Marcellus,Georgia,serif;font-size:clamp(28px,5vw,40px);line-height:1.1;margin:0 0 4px}
+.article-name{font-size:14px;color:var(--text-dim);margin:0 0 14px}
+.reason{margin:0 0 18px;max-width:62ch}
+.reason b{color:var(--brass);font-weight:600}
+.casecite{font-size:13px;color:var(--text-dim);font-style:italic;margin:0 0 18px}
+
+.next{
+  background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);
+  font:inherit;font-size:15px;font-weight:600;padding:11px 24px;cursor:pointer;
+}
+.next:hover{opacity:.86}
+
+/* ---------- scoreline ---------- */
+.score{
+  display:flex;gap:22px;flex-wrap:wrap;margin-top:34px;padding-top:14px;
+  border-top:1px solid var(--line);font-size:13px;color:var(--text-dim);
+}
+.score b{font-family:Marcellus,Georgia,serif;font-size:17px;color:var(--text);font-weight:400}
+
+/* ---------- citizen path ---------- */
+.ledger{
+  display:flex;gap:20px;flex-wrap:wrap;margin:0 0 22px;padding:12px 16px;
+  background:var(--surface-2);border-radius:var(--radius);font-size:13px;color:var(--text-dim);
+}
+.ledger b{font-family:Marcellus,Georgia,serif;font-size:17px;color:var(--text);font-weight:400;display:block}
+.path-choices{display:flex;flex-direction:column;gap:9px;margin-bottom:8px}
+.path-choices .choice{text-align:left;font-weight:400;line-height:1.45}
+.note{
+  border-left:2px solid var(--brass);padding:2px 0 2px 16px;margin:0 0 22px;
+  font-size:14.5px;color:var(--text-dim);max-width:62ch;
+}
+.note b{color:var(--text);font-weight:600}
+.ending{font-family:Marcellus,Georgia,serif;font-size:clamp(21px,4vw,28px);line-height:1.35;margin:0 0 14px;max-width:32ch}
+
+/* ---------- reference tab ---------- */
+.ref-nav{display:flex;gap:0;margin:0 0 22px;border-bottom:1px solid var(--line);overflow-x:auto}
+.ref-nav button{
+  background:none;border:none;border-bottom:2px solid transparent;
+  font:inherit;font-size:13px;font-weight:500;color:var(--text-dim);
+  padding:10px 0;margin-right:22px;cursor:pointer;white-space:nowrap;
+}
+.ref-nav button.active{color:var(--text);border-bottom-color:var(--brass)}
+.ref-panel{display:none}
+.ref-panel.active{display:block}
+.ref-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;margin:0 0 14px;
+}
+.ref-card h3{
+  font-family:Marcellus,Georgia,serif;font-size:18px;margin:0 0 6px;
+}
+.ref-card .art-label{font-size:12px;color:var(--brass);letter-spacing:.06em;margin:0 0 10px}
+.ref-card p{margin:0 0 10px;max-width:62ch;font-size:15px;line-height:1.55}
+.ref-card p:last-child{margin-bottom:0}
+.ref-card ul{margin:6px 0 10px;padding-left:20px}
+.ref-card li{margin:0 0 5px;font-size:14.5px;line-height:1.5}
+.ref-card .tag{
+  display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;
+  padding:3px 8px;border-radius:2px;margin-right:6px;
+}
+.tag-case{background:color-mix(in srgb,var(--brass) 18%,var(--surface));color:var(--brass)}
+.tag-limit{background:color-mix(in srgb,var(--rose) 14%,var(--surface));color:var(--rose)}
+.tag-tip{background:color-mix(in srgb,var(--sage) 14%,var(--surface));color:var(--sage)}
+.ref-card .sub{font-size:13px;color:var(--text-dim);font-style:italic;margin:0 0 8px}
+.ref-intro{margin:0 0 22px;max-width:62ch;font-size:15px;line-height:1.6}
+.ref-intro b{color:var(--brass);font-weight:600}
+.ref-table{width:100%;border-collapse:collapse;margin:0 0 18px;font-size:14px}
+.ref-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);font-weight:600;font-size:13px;color:var(--text-dim)}
+.ref-table td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.ref-table tr:last-child td{border-bottom:none}
+.ref-section-head{
+  font-family:Marcellus,Georgia,serif;font-size:clamp(20px,3.6vw,26px);
+  margin:30px 0 14px;padding-top:14px;border-top:1px solid var(--line);
+}
+.ref-section-head:first-child{border-top:none;margin-top:0;padding-top:0}
+
+/* ---------- misc ---------- */
+.done{text-align:left;padding:28px 0}
+.done h2{font-family:Marcellus,Georgia,serif;font-size:clamp(24px,4.6vw,34px);margin:0 0 12px}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.hidden{display:none!important}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+  .verdict{opacity:1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <h1 class="mark">The <em>Docket</em></h1>
+    <p>Learn your rights by deciding cases, not reading articles.</p>
+    <button class="theme-btn" id="themeBtn" type="button">Dark</button>
+  </header>
+
+  <nav class="rail" role="tablist">
+    <button role="tab" aria-selected="true" data-mode="court">Rights Court</button>
+    <button role="tab" aria-selected="false" data-mode="hunt">Article Hunt</button>
+    <button role="tab" aria-selected="false" data-mode="path">Citizen Path</button>
+    <button role="tab" aria-selected="false" data-mode="ref">Reference</button>
+  </nav>
+
+  <!-- ===== RIGHTS COURT ===== -->
+  <section id="court">
+    <p class="docket-no" id="c-no"></p>
+    <p class="scenario" id="c-text"></p>
+
+    <div id="c-step1">
+      <p class="prompt">Your finding</p>
+      <div class="choices">
+        <button class="choice" data-v="1">Violation</button>
+        <button class="choice" data-v="0">No violation</button>
+      </div>
+    </div>
+
+    <div id="c-step2" class="hidden">
+      <p class="prompt">Under which article?</p>
+      <div class="grid" id="c-grid"></div>
+    </div>
+
+    <div class="verdict hidden" id="c-verdict">
+      <hr>
+      <p class="article-no" id="c-art"></p>
+      <p class="article-name" id="c-artname"></p>
+      <p class="reason" id="c-reason"></p>
+      <p class="casecite hidden" id="c-cite"></p>
+      <button class="next" id="c-next">Next case</button>
+    </div>
+
+    <div class="score">
+      <span>Case <b id="c-i">1</b> of <b id="c-n">20</b></span>
+      <span>Findings right <b id="c-s1">0</b></span>
+      <span>Articles right <b id="c-s2">0</b></span>
+    </div>
+  </section>
+
+  <!-- ===== ARTICLE HUNT ===== -->
+  <section id="hunt" class="hidden">
+    <p class="docket-no" id="h-no"></p>
+    <p class="scenario" id="h-text"></p>
+    <p class="prompt">Which article is your ground?</p>
+    <div class="grid" id="h-grid"></div>
+
+    <div class="verdict hidden" id="h-verdict">
+      <hr>
+      <p class="article-no" id="h-art"></p>
+      <p class="article-name" id="h-artname"></p>
+      <p class="reason" id="h-reason"></p>
+      <button class="next" id="h-next">Next</button>
+    </div>
+
+    <div class="score">
+      <span>Question <b id="h-i">1</b> of <b id="h-n">16</b></span>
+      <span>Correct <b id="h-s">0</b></span>
+      <span>Streak <b id="h-k">0</b></span>
+      <span>Best streak <b id="h-b">0</b></span>
+    </div>
+  </section>
+
+  <!-- ===== CITIZEN PATH ===== -->
+  <section id="path" class="hidden">
+    <div class="ledger">
+      <span>Days held<b id="p-days">0</b></span>
+      <span>Spent<b id="p-cost">₹0</b></span>
+    </div>
+    <p class="scenario" id="p-text"></p>
+    <p class="note hidden" id="p-note"></p>
+    <div class="path-choices" id="p-choices"></div>
+    <button class="next hidden" id="p-restart">Start again</button>
+  </section>
+
+  <!-- ===== REFERENCE ===== -->
+  <section id="ref" class="hidden">
+
+    <nav class="ref-nav">
+      <button class="active" data-ref="overview">Overview</button>
+      <button data-ref="rights">Your Rights</button>
+      <button data-ref="structure">Structure</button>
+      <button data-ref="amendments">Amendments</button>
+      <button data-ref="enforce">Enforcement</button>
+    </nav>
+
+    <!-- OVERVIEW -->
+    <div class="ref-panel active" id="ref-overview">
+      <p class="ref-intro">The Constitution of India, adopted <b>26 November 1949</b> and effective <b>26 January 1950</b>, is the world's longest written constitution. It establishes India as a <b>Sovereign, Socialist, Secular, Democratic Republic</b> with a parliamentary system.</p>
+      <p class="ref-intro">Originally 395 articles and 8 schedules — now ~470 articles and 12 schedules after amendments. It draws from multiple sources:</p>
+      <table class="ref-table">
+        <tr><th>Source</th><th>What India took</th></tr>
+        <tr><td>United States</td><td>Fundamental Rights, judicial review, independence of judiciary</td></tr>
+        <tr><td>United Kingdom</td><td>Parliamentary system, rule of law, legislative procedure</td></tr>
+        <tr><td>Ireland</td><td>Directive Principles of State Policy</td></tr>
+        <tr><td>Canada</td><td>Federal structure with a strong centre</td></tr>
+        <tr><td>Germany</td><td>Emergency provisions, suspension of rights</td></tr>
+        <tr><td>Australia</td><td>Concurrent List, freedom of trade</td></tr>
+        <tr><td>South Africa</td><td>Amendment procedure</td></tr>
+      </table>
+      <p class="ref-intro">Power is divided between Union and States. <b>Fundamental Rights</b> (Part III) are enforceable in court. <b>Directive Principles</b> (Part IV) are aspirational — they guide policy but can't be sued on. <b>Fundamental Duties</b> (Part IVA, added 1976) are non-enforceable obligations of citizens.</p>
+    </div>
+
+    <!-- YOUR RIGHTS -->
+    <div class="ref-panel" id="ref-rights">
+
+      <h2 class="ref-section-head">The five that matter most in daily life</h2>
+
+      <div class="ref-card">
+        <p class="art-label">Article 21</p>
+        <h3>Right to Life &amp; Personal Liberty</h3>
+        <p>The most powerful article. No person shall be deprived of life or personal liberty except according to procedure established by law — and that procedure must be <em>fair</em>, not merely existent.</p>
+        <p>Courts have expanded it massively. It now includes:</p>
+        <ul>
+          <li>Right to privacy</li>
+          <li>Right to dignity</li>
+          <li>Right to livelihood</li>
+          <li>Right to health and emergency medical care</li>
+          <li>Right to clean environment</li>
+          <li>Right to speedy trial</li>
+          <li>Right to shelter</li>
+        </ul>
+        <p><span class="tag tag-tip">When it applies</span> Police brutality, illegal detention, hospital refusing emergency treatment, privacy violations, data misuse, demolitions without notice.</p>
+        <p><span class="tag tag-limit">Limitation</span> Enforceable against the <em>State</em> (Art. 12), not directly against private parties.</p>
+        <p><span class="tag tag-case">Key case</span> <em>K.S. Puttaswamy v. Union of India (2017)</em> — privacy declared a fundamental right under Art. 21.</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Article 22</p>
+        <h3>Protection on Arrest</h3>
+        <p>If arrested, police <b>must</b> tell you why. You <b>must</b> get a lawyer of your choice. You <b>must</b> be produced before a magistrate within <b>24 hours</b>. If any of this doesn't happen — it is illegal detention, challengeable immediately in the High Court via habeas corpus.</p>
+        <p><span class="tag tag-tip">Remember</span> The 24-hour clock excludes travel time to the magistrate. But 36 hours is still a violation.</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Article 19</p>
+        <h3>Six Freedoms</h3>
+        <p><b>19(1)(a)</b> — Speech &amp; expression. Say, write, post what you want. Restrictions only for: national security, public order, defamation, decency, foreign relations, contempt of court. Vague "hurting sentiments" is not valid.</p>
+        <p><b>19(1)(b)</b> — Peaceful assembly. Protest, gather, demonstrate — must be peaceful and unarmed. Can be regulated (time, place) but not blanket banned.</p>
+        <p><b>19(1)(c)</b> — Form associations. Start unions, political parties, NGOs.</p>
+        <p><b>19(1)(d)</b> — Move freely across India. No internal passport. No state can stop you at its border.</p>
+        <p><b>19(1)(e)</b> — Reside anywhere in India.</p>
+        <p><b>19(1)(g)</b> — Practice any profession. State can regulate (licensing) but not arbitrarily ban your livelihood.</p>
+        <p><span class="tag tag-case">Key case</span> <em>S. Rangarajan v. P. Jagjivan Ram (1989)</em> — the heckler's veto. State must protect lawful speech, not shut it down because someone threatens violence.</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Article 14</p>
+        <h3>Equality Before Law</h3>
+        <p>Every person is equal before the law. The state cannot treat you arbitrarily — any government action affecting you must have a rational basis. If a government office, bank, or authority singles you out or acts without reason, this is your ground.</p>
+        <p><span class="tag tag-tip">The test</span> Is the classification based on an <em>intelligible differentia</em> with a <em>rational nexus</em> to the object of the law?</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Article 32</p>
+        <h3>Right to Constitutional Remedies</h3>
+        <p>Ambedkar called it the <b>heart and soul</b> of the Constitution. Without this, rights are words on paper. You can approach the Supreme Court directly if any fundamental right is violated. The High Court equivalent is Art. 226 — and it's broader.</p>
+      </div>
+
+      <h2 class="ref-section-head">All six categories</h2>
+
+      <div class="ref-card">
+        <p class="art-label">Articles 14–18</p>
+        <h3>Right to Equality</h3>
+        <p><b>Art. 14</b> — Equality before law. <b>Art. 15</b> — No discrimination on grounds of religion, race, caste, sex, or place of birth. Reservations for SC/ST/OBC and women are permitted exceptions (Art. 15(3), 15(4), 15(5)). <b>Art. 16</b> — Equal opportunity in government jobs. <b>Art. 17</b> — Abolition of untouchability, no exceptions, criminal offence. <b>Art. 18</b> — No titles (Sir, Lord, etc).</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Articles 19–22</p>
+        <h3>Right to Freedom</h3>
+        <p>The six freedoms under Art. 19 (detailed above). <b>Art. 20</b> — Protection if accused: no retrospective criminal law (ex post facto), no double jeopardy, no compelled self-incrimination. <b>Art. 21</b> — Life and liberty (detailed above). <b>Art. 21A</b> — Right to education for children 6–14. <b>Art. 22</b> — Protection on arrest (detailed above).</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Articles 23–24</p>
+        <h3>Right Against Exploitation</h3>
+        <p><b>Art. 23</b> — No forced labour, bonded labour, or human trafficking. Below-minimum-wage work raises a presumption of force. <b>Art. 24</b> — No child labour (under 14) in factories, mines, or hazardous work. Absolute — no consent can cure it.</p>
+        <p><span class="tag tag-case">Key case</span> <em>Bandhua Mukti Morcha v. Union of India (1984)</em></p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Articles 25–28</p>
+        <h3>Right to Religion</h3>
+        <p><b>Art. 25</b> — Freedom of conscience and to profess, practise and propagate religion, subject to public order, morality and health. <b>Art. 26</b> — Religious denominations may manage their own affairs. <b>Art. 27</b> — No tax to promote any religion. <b>Art. 28</b> — No religious instruction in state-funded institutions.</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Articles 29–30</p>
+        <h3>Cultural &amp; Educational Rights</h3>
+        <p><b>Art. 29</b> — Any section of citizens with a distinct language, script or culture may conserve it. <b>Art. 30</b> — Religious and linguistic minorities may establish and administer their own institutions. The state may regulate standards but cannot take over administration.</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Article 32</p>
+        <h3>Right to Constitutional Remedies</h3>
+        <p>The enforcement right. Without it, everything above is advisory. The Supreme Court can issue writs: habeas corpus (produce the person), mandamus (do your duty), prohibition (stop exceeding jurisdiction), certiorari (quash an order), quo warranto (by what authority do you hold this office).</p>
+      </div>
+
+      <div class="ref-card">
+        <p class="art-label">Formerly Article 31</p>
+        <h3>Right to Property — removed</h3>
+        <p>Originally a fundamental right. Removed by the 44th Amendment (1978) and made a legal right under Art. 300A. You can still challenge property seizure — just not as a fundamental right.</p>
+      </div>
+
+    </div>
+
+    <!-- STRUCTURE -->
+    <div class="ref-panel" id="ref-structure">
+
+      <h2 class="ref-section-head">25 Parts</h2>
+      <table class="ref-table">
+        <tr><th>Part</th><th>Subject</th></tr>
+        <tr><td>I</td><td>The Union and its territory</td></tr>
+        <tr><td>II</td><td>Citizenship</td></tr>
+        <tr><td>III</td><td>Fundamental Rights</td></tr>
+        <tr><td>IV</td><td>Directive Principles of State Policy</td></tr>
+        <tr><td>IVA</td><td>Fundamental Duties</td></tr>
+        <tr><td>V</td><td>The Union — President, PM, Parliament, Supreme Court</td></tr>
+        <tr><td>VI</td><td>The States</td></tr>
+        <tr><td>VII</td><td>(Repealed)</td></tr>
+        <tr><td>VIII</td><td>Union Territories</td></tr>
+        <tr><td>IX</td><td>Panchayats</td></tr>
+        <tr><td>IXA</td><td>Municipalities</td></tr>
+        <tr><td>IXB</td><td>Co-operative Societies</td></tr>
+        <tr><td>X</td><td>Scheduled and Tribal Areas</td></tr>
+        <tr><td>XI</td><td>Union–State Relations</td></tr>
+        <tr><td>XII</td><td>Finance, Property, Contracts</td></tr>
+        <tr><td>XIII</td><td>Trade and Commerce</td></tr>
+        <tr><td>XIV</td><td>Services under Union and States</td></tr>
+        <tr><td>XIVA</td><td>Tribunals</td></tr>
+        <tr><td>XV</td><td>Elections</td></tr>
+        <tr><td>XVI</td><td>Special provisions (SC/ST/minorities)</td></tr>
+        <tr><td>XVII</td><td>Official Language</td></tr>
+        <tr><td>XVIII</td><td>Emergency Provisions</td></tr>
+        <tr><td>XIX</td><td>Miscellaneous</td></tr>
+        <tr><td>XX</td><td>Amendment (Art. 368)</td></tr>
+        <tr><td>XXI</td><td>Temporary and Transitional Provisions</td></tr>
+        <tr><td>XXII</td><td>Short title, commencement, Hindi text</td></tr>
+      </table>
+
+      <h2 class="ref-section-head">12 Schedules</h2>
+      <p class="ref-intro">Schedules are appendices — detailed lists attached at the end so the main articles stay clean. Like annexures in a contract.</p>
+      <table class="ref-table">
+        <tr><th>Schedule</th><th>Content</th><th>Why it matters</th></tr>
+        <tr><td>1st</td><td>List of States and Union Territories</td><td>Updated every time a state is created or renamed</td></tr>
+        <tr><td>2nd</td><td>Salaries of President, Governors, judges</td><td>Sets pay without needing a new law each time</td></tr>
+        <tr><td>3rd</td><td>Forms of oaths and affirmations</td><td>Every public office has a prescribed oath</td></tr>
+        <tr><td>4th</td><td>Rajya Sabha seats per state</td><td>Allocation by population</td></tr>
+        <tr><td>5th</td><td>Scheduled Areas and Scheduled Tribes</td><td>Special governance for tribal regions</td></tr>
+        <tr><td>6th</td><td>Tribal Areas in NE India</td><td>Autonomous councils for NE tribal areas</td></tr>
+        <tr><td><b>7th</b></td><td><b>Union / State / Concurrent Lists</b></td><td><b>Who makes law on what — the most important schedule</b></td></tr>
+        <tr><td><b>8th</b></td><td><b>22 official languages</b></td><td>Languages recognised by the Constitution</td></tr>
+        <tr><td><b>9th</b></td><td>Laws shielded from judicial review</td><td>Controversial — land reform acts placed here to avoid challenge</td></tr>
+        <tr><td><b>10th</b></td><td><b>Anti-defection law</b></td><td>Added 1985 — switching parties costs your seat</td></tr>
+        <tr><td>11th</td><td>Powers of Panchayats (29 subjects)</td><td>Added 1992 — local self-governance</td></tr>
+        <tr><td>12th</td><td>Powers of Municipalities (18 subjects)</td><td>Added 1992 — urban local bodies</td></tr>
+      </table>
+
+      <h2 class="ref-section-head">Federalism — asymmetric, Centre-heavy</h2>
+      <p class="ref-intro">The 7th Schedule divides legislative power into three lists:</p>
+      <table class="ref-table">
+        <tr><th>List</th><th>Who legislates</th><th>Examples</th></tr>
+        <tr><td>Union List</td><td>Centre only</td><td>Defence, foreign affairs, banking, atomic energy</td></tr>
+        <tr><td>State List</td><td>States only</td><td>Police, agriculture, land, public health</td></tr>
+        <tr><td>Concurrent List</td><td>Both (Centre prevails on conflict)</td><td>Education, forests, criminal law, marriage</td></tr>
+      </table>
+      <p class="ref-intro">The Centre dominates — it can impose President's Rule (Art. 356), create or alter states, and override in emergencies.</p>
+    </div>
+
+    <!-- AMENDMENTS -->
+    <div class="ref-panel" id="ref-amendments">
+
+      <h2 class="ref-section-head">How to amend (Art. 368)</h2>
+      <p class="ref-intro">Three routes, depending on what is being changed:</p>
+
+      <div class="ref-card">
+        <h3>Simple Majority</h3>
+        <p>Both Houses, normal voting. For: admission of new states, creating/abolishing legislatures, citizenship rules. Not formally called an "amendment".</p>
+      </div>
+
+      <div class="ref-card">
+        <h3>Special Majority</h3>
+        <p>2/3 of members present <b>and</b> majority of total strength, in both Houses. For: most constitutional amendments — fundamental rights, DPSP, elections.</p>
+      </div>
+
+      <div class="ref-card">
+        <h3>Special Majority + State Ratification</h3>
+        <p>Special majority plus ratification by ≥50% of state legislatures. For: federal structure changes — 7th Schedule, Supreme Court composition, representation of states, Art. 368 itself.</p>
+      </div>
+
+      <h2 class="ref-section-head">The hard limit: Basic Structure</h2>
+      <p class="ref-intro">Parliament can amend the Constitution but cannot destroy its core. The Supreme Court will strike down any amendment that violates the Basic Structure.</p>
+      <p class="ref-intro"><span class="tag tag-case">Origin</span> <em>Kesavananda Bharati v. State of Kerala (1973)</em> — the 13-judge bench that changed Indian constitutional law permanently.</p>
+      <p class="ref-intro">The court has never given an exhaustive list — it's deliberately open-ended. But cases have identified these as part of the core:</p>
+      <ul style="max-width:62ch;margin:0 0 18px;padding-left:20px;line-height:1.7">
+        <li>Supremacy of the Constitution</li>
+        <li>Republican and democratic form of government</li>
+        <li>Secular character</li>
+        <li>Separation of powers</li>
+        <li>Federal character</li>
+        <li>Judicial review</li>
+        <li>Rule of law</li>
+        <li>Free and fair elections</li>
+        <li>Independence of the judiciary</li>
+        <li>Fundamental Rights (especially Art. 32)</li>
+        <li>Unity and integrity of India</li>
+        <li>Parliamentary system</li>
+      </ul>
+      <p class="ref-intro">New elements get added case by case. That's the point — it's a living doctrine, not a fixed checklist.</p>
+      <p class="ref-intro"><span class="tag tag-case">Also see</span> <em>Minerva Mills v. Union of India (1980)</em> — confirmed and strengthened the doctrine.</p>
+    </div>
+
+    <!-- ENFORCEMENT -->
+    <div class="ref-panel" id="ref-enforce">
+
+      <h2 class="ref-section-head">If your rights are violated</h2>
+
+      <div class="ref-card">
+        <h3>Step 1: High Court (Art. 226)</h3>
+        <p>Faster, closer, broader jurisdiction than the Supreme Court. For everyday violations — police misconduct, arbitrary detention, government harassment — this is the real tool. You file a <b>writ petition</b>.</p>
+        <p>Five types of writs: <b>habeas corpus</b> (produce the person), <b>mandamus</b> (do your duty), <b>prohibition</b> (stop), <b>certiorari</b> (quash), <b>quo warranto</b> (by what authority).</p>
+      </div>
+
+      <div class="ref-card">
+        <h3>Step 2: If you can't afford a lawyer</h3>
+        <p>You are entitled to <b>free legal aid</b> under Art. 39A and the Legal Services Authorities Act. Every district has a <b>DLSA</b> (District Legal Services Authority). National helpline: <b>15100</b>.</p>
+        <p><span class="tag tag-tip">Eligibility</span> SC/ST members, women, children, persons with disabilities, industrial workers, victims of trafficking, persons in custody, those below income threshold — all eligible.</p>
+      </div>
+
+      <div class="ref-card">
+        <h3>Step 3: Supreme Court (Art. 32)</h3>
+        <p>Only for significant constitutional questions, or when the HC has failed you. Art. 32 lets you approach the SC directly for fundamental rights violations — but practically, the HC is the first stop.</p>
+      </div>
+
+      <div class="ref-card">
+        <h3>Public Interest Litigation (PIL)</h3>
+        <p>Any citizen can approach the court <b>on behalf of</b> those who can't access it themselves. This is India's workaround for the access gap. Even a postcard to the SC has historically been treated as a petition (though today a proper filing is practically needed).</p>
+        <p><span class="tag tag-case">Pioneer</span> Justice P.N. Bhagwati, 1970s–80s</p>
+      </div>
+
+      <div class="ref-card">
+        <h3>E-filing</h3>
+        <p>Available for both SC and most High Courts. <b>Supreme Court:</b> sci.gov.in. You still realistically need a lawyer to draft the petition — filing yourself is allowed but rare.</p>
+      </div>
+
+      <h2 class="ref-section-head">The honest gap</h2>
+      <p class="ref-intro">Every right in Part III exists on paper. Whether it works for you depends on: can you afford a lawyer (or find the DLSA), do you know the right exists, can you take time off for hearings, how far is the court, and will the case conclude in your lifetime — India has 50 million+ cases backlogged.</p>
+      <p class="ref-intro">The law is powerful. The access problem is real. Both are true at the same time.</p>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+/* ============ DATA ============ */
+
+var ARTNAMES = {
+  "14":"Equality before law",
+  "15":"No discrimination by religion, race, caste, sex, birthplace",
+  "17":"Abolition of untouchability",
+  "19":"The six freedoms",
+  "20":"Protection if accused of an offence",
+  "21":"Life and personal liberty",
+  "22":"Protection on arrest and detention",
+  "23":"No forced or bonded labour",
+  "24":"No child labour in hazardous work",
+  "25":"Freedom of conscience and religion",
+  "30":"Minorities may run their own institutions",
+  "32":"Right to move the Supreme Court",
+  "12":"Who counts as 'the State'"
+};
+
+var COURT = [
+  { t:"Police pick up a man at 9pm on Tuesday. He is produced before a magistrate at 9am on Thursday.",
+    v:1, a:"22",
+    r:"Thirty-six hours. The ceiling is <b>24 hours</b>, excluding time spent travelling to the magistrate. Past that, the detention is illegal and a habeas corpus petition lies in the High Court straight away." },
+
+  { t:"A state requires a recognised medical degree and registration before anyone may practise medicine. An unqualified healer is stopped.",
+    v:0, a:"19",
+    r:"Art. 19(1)(g) protects your right to a profession, but the state may <b>regulate</b> it. Qualifications, licensing and safety standards are reasonable restrictions — they are not a ban on your livelihood." },
+
+  { t:"A film clears the censor board. A group threatens riots if it is screened. The state orders cinemas to stop showing it.",
+    v:1, a:"19",
+    r:"Called a <b>heckler's veto</b>. The state's duty is to provide protection so lawful speech can continue, not to shut the speech down because someone threatened violence. Public order cannot be outsourced to whoever shouts loudest.",
+    c:"S. Rangarajan v. P. Jagjivan Ram (1989)" },
+
+  { t:"A temple refuses entry to a man because of his caste.",
+    v:1, a:"17",
+    r:"Art. 17 is one of the few articles written with <b>no exception clause at all</b>. Untouchability is abolished outright and practising it is a criminal offence under the Protection of Civil Rights Act." },
+
+  { t:"A central university reserves 27% of its seats for candidates from Other Backward Classes.",
+    v:0, a:"15",
+    r:"Art. 15(1) bans discrimination, but Art. 15(4) and 15(5) are <b>express carve-outs</b> permitting special provision for socially and educationally backward classes, SCs and STs. Reservation sits inside the equality code, not against it." },
+
+  { t:"A state sets up a checkpost on its border and turns back citizens of a neighbouring state in ordinary times.",
+    v:1, a:"19",
+    r:"Art. 19(1)(d) gives you free movement <b>throughout the territory of India</b>. There is no internal passport. Restrictions are allowed only in the general public interest or to protect scheduled tribe areas." },
+
+  { t:"An undertrial has spent seven years in jail awaiting trial. The maximum sentence for the offence charged is three years.",
+    v:1, a:"21",
+    r:"A <b>speedy trial</b> is read into Art. 21. Detention longer than the maximum possible sentence inverts the whole point of a trial — the process has become the punishment.",
+    c:"Hussainara Khatoon v. State of Bihar (1979)" },
+
+  { t:"Parliament makes an act criminal in 2023. The state prosecutes a man for having done that act in 2019.",
+    v:1, a:"20",
+    r:"Art. 20(1) bars <b>ex post facto</b> criminal law. You can only be convicted under the law as it stood when you acted, and only to the penalty that existed then." },
+
+  { t:"During questioning, police pressure a suspect into signing a confession.",
+    v:1, a:"20",
+    r:"Art. 20(3): no person accused of an offence shall be <b>compelled to be a witness against himself</b>. Confessions to police are already largely inadmissible; compulsion makes it a constitutional violation on top." },
+
+  { t:"The municipality refuses permission for a loudspeaker rally at 2am on the road outside a hospital.",
+    v:0, a:"19",
+    r:"Art. 19(1)(b) protects peaceful assembly, but <b>time, place and manner</b> may be regulated for public order and health. The rally is not banned — this particular hour and location are." },
+
+  { t:"A state orders a minority-run school to replace its management committee with state nominees.",
+    v:1, a:"30",
+    r:"Art. 30 gives religious and linguistic minorities the right to <b>establish and administer</b> their own institutions. The state may regulate standards and prevent maladministration, but cannot take over the administration itself." },
+
+  { t:"A brick kiln holds workers and makes them work off a debt inherited from a parent, with no wages paid.",
+    v:1, a:"23",
+    r:"Art. 23 bans <b>begar and forced labour</b>. The Supreme Court has held that work for less than the minimum wage raises a presumption of force — you are not choosing freely if the alternative is destitution.",
+    c:"Bandhua Mukti Morcha v. Union of India (1984)" },
+
+  { t:"A factory employs a 12-year-old to handle industrial chemicals.",
+    v:1, a:"24",
+    r:"Art. 24 is absolute for <b>under-14s in factories, mines and hazardous work</b>. No consent from the child or the parents can cure it." },
+
+  { t:"A state welfare scheme is open only to members of one religion.",
+    v:1, a:"15",
+    r:"Art. 15(1) forbids the state discriminating on grounds of <b>religion</b>, among others. A benefit keyed to religious membership rather than to need or backwardness falls outside the Art. 15(4) carve-out." },
+
+  { t:"A man is acquitted of theft. The state prosecutes him again on the same facts for the same offence.",
+    v:1, a:"20",
+    r:"Art. 20(2) — <b>double jeopardy</b>. Once prosecuted and punished or acquitted for an offence, you cannot be tried again for that same offence." },
+
+  { t:"A private company fires an employee because of his political posts on social media.",
+    v:0, a:"12",
+    r:"Harsh, but not a Fundamental Rights violation. Under Art. 12, Fundamental Rights bind <b>'the State'</b> — government, legislatures, local authorities and bodies under state control. A private employer is not the State. Your remedy is in labour and contract law, not Part III.",
+    c:"The trap in most rights questions — check who the defendant is first." },
+
+  { t:"A government hospital turns away a serious road accident victim without following any referral procedure. He dies on the way to the next hospital.",
+    v:1, a:"21",
+    r:"Emergency medical care is part of the <b>right to life</b>. A government hospital refusing a serious case is a direct Art. 21 violation, and the state is liable in compensation.",
+    c:"Paschim Banga Khet Mazdoor Samity v. State of West Bengal (1996)" },
+
+  { t:"A government agency collects citizens' biometric data and shares it with private firms, with no law authorising the sharing and no consent taken.",
+    v:1, a:"21",
+    r:"Privacy is a fundamental right under Art. 21. State intrusion must clear three tests: there must be a <b>law</b>, a <b>legitimate aim</b>, and the means must be <b>proportionate</b>. Sharing with no law behind it fails at step one.",
+    c:"K.S. Puttaswamy v. Union of India (2017)" },
+
+  { t:"A state law bars anyone with more than two children from contesting panchayat elections.",
+    v:0, a:"14",
+    r:"Counterintuitive, but upheld. Art. 14 permits classification if it is based on an <b>intelligible differentia</b> with a <b>rational nexus</b> to the object. The court accepted population control as a legitimate object and the classification as rationally connected to it.",
+    c:"Javed v. State of Haryana (2003)" },
+
+  { t:"A city demolishes a settlement of 400 families overnight, with no notice, no hearing and no rehabilitation.",
+    v:1, a:"21",
+    r:"Art. 21 protects <b>livelihood and shelter</b>, and 'procedure established by law' has been read to mean a procedure that is fair, not merely one that exists. No notice and no hearing is not procedure.",
+    c:"Olga Tellis v. Bombay Municipal Corporation (1985)" }
+];
+
+var HUNTARTS = ["14","15","17","19","20","21","22","23","24","25","30","32"];
+
+var HUNT = [
+  { t:"You are arrested and the police refuse to tell you on what charge.", a:"22",
+    r:"Grounds of arrest must be communicated. You also get a lawyer of your choice and a magistrate within 24 hours." },
+  { t:"A government body collects your location data with no law authorising it.", a:"21",
+    r:"Privacy sits inside the right to life. State intrusion needs a law, a legitimate aim and proportionate means." },
+  { t:"You are stopped from drawing water at the village well because of your caste.", a:"17",
+    r:"Untouchability is abolished outright, with no exception clause and criminal consequences." },
+  { t:"A state scholarship is denied to you because of your religion.", a:"15",
+    r:"Discrimination by the state on grounds of religion, race, caste, sex or place of birth is barred." },
+  { t:"Police compel you to unlock your phone so it can be used to convict you.", a:"20",
+    r:"No person accused of an offence can be compelled to be a witness against himself." },
+  { t:"You want to start a trade union at your workplace.", a:"19",
+    r:"Art. 19(1)(c) — the freedom to form associations and unions." },
+  { t:"A ten-year-old is found working in a mine.", a:"24",
+    r:"Absolute bar on children under 14 in factories, mines and hazardous work." },
+  { t:"You want to move from Hyderabad to Shillong for work and settle there.", a:"19",
+    r:"Art. 19(1)(d) and (e) — move freely through India and reside in any part of it." },
+  { t:"A Christian trust wants to set up and run its own college.", a:"30",
+    r:"Religious and linguistic minorities may establish and administer their own institutions." },
+  { t:"Your right has been violated and you want to approach the Supreme Court directly.", a:"32",
+    r:"Art. 32 is itself a fundamental right — Ambedkar called it the heart and soul of the Constitution." },
+  { t:"A labourer is held at a farm and made to work off a loan without wages.", a:"23",
+    r:"Begar and forced labour are banned. Below-minimum-wage work raises a presumption of force." },
+  { t:"A tax notice is issued to you alone, while identically placed people are left untouched.", a:"14",
+    r:"State action must rest on a rational basis. Singling you out arbitrarily fails equality before the law." },
+  { t:"You want to wear a religious symbol that your faith requires.", a:"25",
+    r:"Freedom of conscience and to profess, practise and propagate religion, subject to public order, morality and health." },
+  { t:"You are tried a second time for an offence you were already acquitted of.", a:"20",
+    r:"Double jeopardy under Art. 20(2)." },
+  { t:"Your home is demolished with no notice and no hearing.", a:"21",
+    r:"Shelter and livelihood are read into the right to life, and the procedure must be fair, not merely existent." },
+  { t:"A state tries to shut down a newspaper for criticising the government.", a:"19",
+    r:"Freedom of speech and expression. Criticism of government is not a listed ground of restriction." }
+];
+
+var PATH = {
+  start:{
+    t:"Police stop you at a checkpoint one evening and take you to the station. Nobody tells you why. Four hours pass.",
+    ch:[
+      {label:"Wait it out quietly. Arguing will make it worse.", to:"wait", days:1},
+      {label:"Ask on what grounds you are being held, and ask to call a lawyer.", to:"ask"},
+      {label:"Raise your voice, refuse to cooperate until they explain.", to:"argue"}
+    ]
+  },
+  argue:{
+    t:"Tempers rise. An obstruction charge gets added to the file. You are no closer to knowing why you were brought in.",
+    note:"Knowing a right and escalating are different things. <b>Art. 22</b> gives you a claim to make, not permission to obstruct. Ask on the record; do not give them a second charge.",
+    ch:[
+      {label:"Calm it down. Ask formally for the grounds and a lawyer.", to:"ask"},
+      {label:"Go silent and wait.", to:"wait", days:1}
+    ]
+  },
+  ask:{
+    t:"You ask, out loud and in front of others, on what grounds you are being held and to speak to a lawyer. They say it is 'an enquiry'. Twenty hours have now passed.",
+    note:"<b>Art. 22(1)</b> obliges them to tell you the grounds and let you consult a lawyer of your choice. Saying it plainly, in front of witnesses, changes how the next hour goes more often than people expect.",
+    ch:[
+      {label:"Get word to family so they can find a lawyer.", to:"lawyer"},
+      {label:"Keep waiting. The 24 hours is not up yet.", to:"wait24"}
+    ]
+  },
+  wait:{
+    t:"Thirty hours pass. No magistrate. No charge. Nobody outside knows where you are.",
+    note:"Past <b>24 hours</b> without a magistrate, this is illegal detention. But a right nobody on the outside knows to invoke does not move by itself.",
+    ch:[
+      {label:"Get word to family.", to:"lawyer"},
+      {label:"Keep waiting.", to:"end_nothing", days:4}
+    ]
+  },
+  wait24:{
+    t:"Twenty-six hours. Still no magistrate.",
+    note:"The clock has run out. The detention is now illegal on its face, and <b>habeas corpus</b> is available.",
+    ch:[
+      {label:"Get word to family.", to:"lawyer"}
+    ]
+  },
+  lawyer:{
+    t:"Your family can reach the court. The question is how.",
+    ch:[
+      {label:"Hire a private advocate for a High Court petition.", to:"writ", cost:40000, days:1},
+      {label:"You cannot afford one. Look for free legal aid.", to:"dlsa", days:1}
+    ]
+  },
+  dlsa:{
+    t:"Your family calls the District Legal Services Authority. A panel advocate is assigned the same week, at no cost.",
+    note:"Free legal aid is backed by <b>Art. 39A</b> and the Legal Services Authorities Act. Every district has a DLSA, every state an SLSA. The national helpline is <b>15100</b>. Most people entitled to this never find out it exists.",
+    ch:[
+      {label:"File the High Court petition through the panel advocate.", to:"writ", days:2}
+    ]
+  },
+  writ:{
+    t:"A habeas corpus petition is filed in the High Court under Art. 226. The court issues notice and orders your production.",
+    note:"<b>Art. 226</b> is wider than Art. 32 and far closer to home. For everyday violations the High Court, not the Supreme Court, is the real door.",
+    ch:[
+      {label:"See how it ends.", to:"end_writ", days:2}
+    ]
+  },
+  end_writ:{
+    t:"You are produced and released. The court records the detention as illegal and asks the state to respond.",
+    note:"Two things carried this: knowing the <b>24-hour rule</b> existed, and someone on the outside who could reach a court. Neither works without the other.",
+    end:true
+  },
+  end_nothing:{
+    t:"You are released on the fifth day. No charge is ever filed. No record of the detention is made. Nothing follows.",
+    note:"Every right in Part III was intact the whole time. The gap was never the law — it was <b>access</b>: knowing the rule, and having someone able to reach a court. That gap is what <b>legal aid</b> and <b>public interest litigation</b> exist to close.",
+    end:true
+  }
+};
+
+/* ============ ENGINE ============ */
+
+function $(id){ return document.getElementById(id); }
+
+/* theme */
+var themeBtn = $("themeBtn");
+function storedTheme(){ try{ return localStorage.getItem("docket-theme"); }catch(e){ return null; } }
+function applyTheme(t){
+  if(t){ document.documentElement.setAttribute("data-theme", t); }
+  var dark = t ? t === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  themeBtn.textContent = dark ? "Light" : "Dark";
+}
+applyTheme(storedTheme());
+themeBtn.addEventListener("click", function(){
+  var cur = document.documentElement.getAttribute("data-theme");
+  var next = cur ? (cur === "dark" ? "light" : "dark")
+    : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark");
+  applyTheme(next);
+  try{ localStorage.setItem("docket-theme", next); }catch(e){}
+});
+
+/* mode switching */
+var modes = ["court","hunt","path","ref"];
+document.querySelectorAll(".rail button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll(".rail button").forEach(function(x){ x.setAttribute("aria-selected","false"); });
+    b.setAttribute("aria-selected","true");
+    modes.forEach(function(m){ $(m).classList.toggle("hidden", m !== b.dataset.mode); });
+    window.scrollTo({ top:0, behavior:"instant" in window ? "auto" : "auto" });
+  });
+});
+
+/* reference sub-nav */
+document.querySelectorAll(".ref-nav button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll(".ref-nav button").forEach(function(x){ x.classList.remove("active"); });
+    b.classList.add("active");
+    document.querySelectorAll(".ref-panel").forEach(function(p){ p.classList.remove("active"); });
+    var panel = document.getElementById("ref-" + b.dataset.ref);
+    if(panel) panel.classList.add("active");
+  });
+});
+
+function shuffle(a){
+  a = a.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+
+/* ---------- Rights Court ---------- */
+var cOrder = shuffle(COURT), cI = 0, cS1 = 0, cS2 = 0, cFinding = null;
+$("c-n").textContent = COURT.length;
+
+function courtGrid(){
+  var correct = cOrder[cI].a;
+  var pool = Object.keys(ARTNAMES).filter(function(k){ return k !== correct; });
+  var opts = shuffle(pool).slice(0,5).concat([correct]);
+  opts.sort(function(a,b){ return Number(a) - Number(b); });
+  var g = $("c-grid"); g.innerHTML = "";
+  opts.forEach(function(a){
+    var b = document.createElement("button");
+    b.className = "choice"; b.textContent = "Art. " + a; b.dataset.a = a;
+    b.addEventListener("click", function(){ courtAnswer(a, b); });
+    g.appendChild(b);
+  });
+}
+
+function renderCourt(){
+  if(cI >= cOrder.length){ courtDone(); return; }
+  var c = cOrder[cI];
+  $("c-no").textContent = "Matter " + (cI+1);
+  $("c-text").textContent = c.t;
+  $("c-i").textContent = cI + 1;
+  $("c-step1").classList.remove("hidden");
+  $("c-step2").classList.add("hidden");
+  $("c-verdict").classList.add("hidden");
+  $("c-verdict").classList.remove("show");
+  cFinding = null;
+  document.querySelectorAll("#c-step1 .choice").forEach(function(b){
+    b.disabled = false; b.className = "choice";
+  });
+  courtGrid();
+}
+
+document.querySelectorAll("#c-step1 .choice").forEach(function(b){
+  b.addEventListener("click", function(){
+    if(cFinding !== null) return;
+    var c = cOrder[cI];
+    cFinding = Number(b.dataset.v);
+    var ok = cFinding === c.v;
+    if(ok) cS1++;
+    $("c-s1").textContent = cS1;
+    document.querySelectorAll("#c-step1 .choice").forEach(function(x){
+      x.disabled = true;
+      if(Number(x.dataset.v) === c.v) x.classList.add("right");
+      else if(x === b) x.classList.add("wrong");
+    });
+    $("c-step2").classList.remove("hidden");
+  });
+});
+
+function courtAnswer(picked, btn){
+  var c = cOrder[cI];
+  if(picked === c.a) cS2++;
+  $("c-s2").textContent = cS2;
+  document.querySelectorAll("#c-grid .choice").forEach(function(x){
+    x.disabled = true;
+    if(x.dataset.a === c.a) x.classList.add("right");
+    else if(x === btn) x.classList.add("wrong");
+  });
+  $("c-art").textContent = "Article " + c.a;
+  $("c-artname").textContent = ARTNAMES[c.a];
+  $("c-reason").innerHTML = c.r;
+  if(c.c){ $("c-cite").textContent = c.c; $("c-cite").classList.remove("hidden"); }
+  else { $("c-cite").classList.add("hidden"); }
+  var v = $("c-verdict");
+  v.classList.remove("hidden");
+  void v.offsetWidth;
+  v.classList.add("show");
+}
+
+$("c-next").addEventListener("click", function(){ cI++; renderCourt(); });
+
+function courtDone(){
+  $("court").innerHTML =
+    '<div class="done"><h2>Twenty matters decided.</h2>' +
+    '<p class="reason">Findings right: <b>' + cS1 + '</b> of ' + COURT.length +
+    '. Articles right: <b>' + cS2 + '</b> of ' + COURT.length + '.</p>' +
+    '<p class="reason">The findings score is the one that matters. Knowing the article number is recall; ' +
+    'knowing whether a restriction is reasonable is the actual skill.</p>' +
+    '<button class="next" onclick="location.reload()">Run it again</button></div>';
+}
+
+/* ---------- Article Hunt ---------- */
+var hOrder = shuffle(HUNT), hI = 0, hS = 0, hK = 0, hB = 0;
+$("h-n").textContent = HUNT.length;
+
+try{ hB = Number(localStorage.getItem("docket-best")) || 0; }catch(e){}
+$("h-b").textContent = hB;
+
+function renderHunt(){
+  if(hI >= hOrder.length){ huntDone(); return; }
+  var q = hOrder[hI];
+  $("h-no").textContent = "Question " + (hI+1);
+  $("h-text").textContent = q.t;
+  $("h-i").textContent = hI + 1;
+  $("h-verdict").classList.add("hidden");
+  $("h-verdict").classList.remove("show");
+  var g = $("h-grid"); g.innerHTML = "";
+  HUNTARTS.forEach(function(a){
+    var b = document.createElement("button");
+    b.className = "choice"; b.textContent = "Art. " + a; b.dataset.a = a;
+    b.addEventListener("click", function(){ huntAnswer(a, b); });
+    g.appendChild(b);
+  });
+}
+
+function huntAnswer(picked, btn){
+  var q = hOrder[hI];
+  if(picked === q.a){ hS++; hK++; if(hK > hB){ hB = hK; try{ localStorage.setItem("docket-best", String(hB)); }catch(e){} } }
+  else { hK = 0; }
+  $("h-s").textContent = hS; $("h-k").textContent = hK; $("h-b").textContent = hB;
+  document.querySelectorAll("#h-grid .choice").forEach(function(x){
+    x.disabled = true;
+    if(x.dataset.a === q.a) x.classList.add("right");
+    else if(x === btn) x.classList.add("wrong");
+  });
+  $("h-art").textContent = "Article " + q.a;
+  $("h-artname").textContent = ARTNAMES[q.a];
+  $("h-reason").innerHTML = q.r;
+  var v = $("h-verdict");
+  v.classList.remove("hidden");
+  void v.offsetWidth;
+  v.classList.add("show");
+}
+
+$("h-next").addEventListener("click", function(){ hI++; renderHunt(); });
+
+function huntDone(){
+  $("hunt").innerHTML =
+    '<div class="done"><h2>Sixteen down.</h2>' +
+    '<p class="reason">Correct: <b>' + hS + '</b> of ' + HUNT.length + '. Best streak: <b>' + hB + '</b>.</p>' +
+    '<button class="next" onclick="location.reload()">Run it again</button></div>';
+}
+
+/* ---------- Citizen Path ---------- */
+var pDays = 0, pCost = 0;
+
+function renderPath(key){
+  var n = PATH[key];
+  $("p-days").textContent = pDays;
+  $("p-cost").textContent = "₹" + pCost.toLocaleString("en-IN");
+  $("p-text").className = n.end ? "ending" : "scenario";
+  $("p-text").textContent = n.t;
+  if(n.note){ $("p-note").innerHTML = n.note; $("p-note").classList.remove("hidden"); }
+  else { $("p-note").classList.add("hidden"); }
+  var c = $("p-choices"); c.innerHTML = "";
+  if(n.end){
+    $("p-restart").classList.remove("hidden");
+    return;
+  }
+  $("p-restart").classList.add("hidden");
+  n.ch.forEach(function(ch){
+    var b = document.createElement("button");
+    b.className = "choice"; b.textContent = ch.label;
+    b.addEventListener("click", function(){
+      pDays += ch.days || 0;
+      pCost += ch.cost || 0;
+      renderPath(ch.to);
+      window.scrollTo({ top:0 });
+    });
+    c.appendChild(b);
+  });
+}
+
+$("p-restart").addEventListener("click", function(){
+  pDays = 0; pCost = 0; renderPath("start");
+});
+
+/* boot */
+renderCourt();
+renderHunt();
+renderPath("start");
+</script>
+</body>
+</html>

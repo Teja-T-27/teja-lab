@@ -1,0 +1,1476 @@
+<title>Flicker Microexpressions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Single light look by request. Layout: a film-slate console. Sticky slate header with tab strip; one 1120px column; every face sits in a dark "film gate" with sprocket edges, because the subject is frames and milliseconds. */
+:root{
+  --paper:#E7EAEE; --panel:#F6F7F9; --ink:#12161E; --ink-2:#434D60; --ink-3:#687386; --line:#C9D0DA;
+  --flash:#F0A202; --flash-ink:#875600; --on-flash:#1B1300;
+  --gate:#12151C; --gate-2:#232937; --gate-ink:#EAEDF3; --gate-dim:#939CAE;
+  --good:#1F7546; --good-bg:#DAEEE1; --bad:#AE3629; --bad-bg:#F5DDD9;
+  --viz:#2B5B8C; --viz-weak:#D6E1EE;
+  --f-display:"Big Shoulders Display","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:12px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-weight:800;font-size:clamp(46px,7.2vw,88px);line-height:.92;text-transform:uppercase}
+h2{font-weight:700;font-size:clamp(30px,4.2vw,46px);line-height:1;text-transform:uppercase}
+h3{font-weight:700;font-size:25px;line-height:1.05;text-transform:uppercase}
+p{margin:0;max-width:66ch}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.5}
+.muted{color:var(--ink-3)}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.mono{font-family:var(--f-mono)}
+.tnum{font-variant-numeric:tabular-nums}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--flash);outline-offset:2px;border-radius:6px}
+
+/* slate header */
+.slate{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
+.slate-in{display:flex;align-items:center;gap:18px;min-height:58px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--f-display);font-weight:800;font-size:27px;letter-spacing:.06em}
+.mark{width:15px;height:20px;border:2px solid var(--ink);border-radius:3px;position:relative;flex:none}
+.mark::after{content:"";position:absolute;inset:3px;background:var(--flash);border-radius:1px;animation:blink 3.6s steps(1) infinite}
+@keyframes blink{0%,96%{opacity:0}97%,100%{opacity:1}}
+.fps{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);white-space:nowrap}
+.tabs{display:flex;gap:2px;overflow-x:auto;margin-left:auto;scrollbar-width:none;min-width:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:17px 11px 15px;font-weight:700;font-size:14.5px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--flash)}
+@media (max-width:820px){.slate-in{flex-wrap:wrap;gap:0 14px;padding-top:8px}.tabs{margin-left:0;width:100%;order:3}.tab{padding:10px 10px 11px}.fps{margin-left:auto}}
+
+.view{padding-block:34px 72px}
+.stack{display:flex;flex-direction:column;gap:18px}
+.sec{margin-top:64px}
+.sec-head{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+@media (max-width:860px){.grid-2{grid-template-columns:minmax(0,1fr)}}
+
+/* buttons & controls */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9px;padding:10px 16px;font-weight:700;font-size:15px;cursor:pointer;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);text-decoration:none;line-height:1.2}
+.btn:hover{filter:brightness(1.12)}
+.btn.flash{background:var(--flash);border-color:var(--flash);color:var(--on-flash)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink-3)}
+.btn.sm{padding:6px 11px;font-size:13.5px;border-radius:8px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.kbd{font-family:var(--f-mono);font-size:11px;border:1px solid currentColor;border-radius:4px;padding:0 4px;opacity:.7}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;background:var(--panel)}
+.seg button{border:0;background:none;padding:6px 11px;border-radius:7px;font-size:13.5px;font-weight:700;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.field{display:flex;flex-direction:column;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--panel);color:var(--ink-2);white-space:nowrap}
+button.chip{cursor:pointer}
+button.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.au{font-family:var(--f-mono);font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:2px 7px;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px;border-radius:999px;padding:3px 11px}
+.pill.ok{background:var(--good-bg);color:var(--good)}
+.pill.no{background:var(--bad-bg);color:var(--bad)}
+.pill.info{background:var(--viz-weak);color:var(--viz)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+
+/* film gate */
+.gate{position:relative;background:var(--gate);color:var(--gate-ink);border-radius:var(--r);overflow:hidden;padding:14px 30px}
+.gate::before,.gate::after{content:"";position:absolute;top:8px;bottom:8px;width:8px;background:repeating-linear-gradient(to bottom,var(--gate-2) 0 9px,transparent 9px 18px);border-radius:2px}
+.gate::before{left:10px}.gate::after{right:10px}
+.gate.thin{padding:8px 22px}.gate.thin::before{left:7px;width:6px}.gate.thin::after{right:7px;width:6px}
+.face{display:block;width:100%;height:auto}
+.hud{position:absolute;font-family:var(--f-mono);font-size:11px;color:var(--gate-dim);letter-spacing:.06em;z-index:2}
+.hud b{color:var(--flash);font-weight:600}
+.hud.tl{top:12px;left:30px}.hud.tr{top:12px;right:30px;text-align:right}.hud.bl{bottom:12px;left:30px}.hud.br{bottom:12px;right:30px;text-align:right}
+
+/* primer */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center}
+.hero .gate{max-width:420px;justify-self:end;width:100%}
+.hero-cap{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;min-height:32px;font-family:var(--f-mono);font-size:12px;color:var(--gate-dim)}
+.hero-cap strong{color:var(--gate-ink);font-weight:600}
+@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr)}.hero .gate{justify-self:center;max-width:380px}}
+.scale-box{overflow-x:auto}
+.scale-box svg{min-width:640px;width:100%;height:auto;display:block}
+.cols-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:860px){.cols-3{grid-template-columns:minmax(0,1fr)}}
+.kind{display:flex;flex-direction:column;gap:8px}
+.kind .num{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1}
+.keys{display:flex;flex-wrap:wrap;gap:4px}
+.key{flex:1 0 56px;min-width:56px;border:1px solid var(--line);background:var(--panel);border-radius:0 0 8px 8px;padding:26px 4px 8px;text-align:center;transition:background .15s,transform .15s}
+.key .k{font-family:var(--f-mono);font-weight:600;font-size:14px;display:block}
+.key .n{font-size:10.5px;color:var(--ink-3);display:block;line-height:1.2;margin-top:3px}
+.key.on{background:var(--flash);border-color:var(--flash);color:var(--on-flash);transform:translateY(3px)}
+.key.on .n{color:var(--on-flash)}
+.chord-out{display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:center;margin-top:18px}
+@media (max-width:560px){.chord-out{grid-template-columns:110px minmax(0,1fr)}}
+.formula{font-family:var(--f-mono);font-size:20px;font-weight:600}
+.callout{border-left:3px solid var(--flash);padding:4px 0 4px 16px}
+.callout .q{font-family:var(--f-display);font-weight:700;font-size:23px;line-height:1.15;text-transform:none}
+.loop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:step}
+.loop a{display:flex;flex-direction:column;gap:6px;text-decoration:none;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+.loop a:hover{border-color:var(--ink-3)}
+.loop .st{font-family:var(--f-mono);font-size:12px;color:var(--flash-ink);font-weight:600}
+@media (max-width:860px){.loop{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.zones{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:28px;align-items:center}
+@media (max-width:700px){.zones{grid-template-columns:minmax(0,1fr)}.zones .gate{max-width:260px}}
+.zlist{display:flex;flex-direction:column;gap:14px}
+.zlist div{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px}
+
+/* atlas */
+.atlas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:1040px){.atlas{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.atlas{grid-template-columns:minmax(0,1fr)}}
+.emo{display:flex;flex-direction:column;gap:12px;padding:0;overflow:hidden}
+.emo .gate{border-radius:var(--r) var(--r) 0 0;padding:6px 26px 0}
+.emo .play{position:absolute;right:30px;bottom:10px;background:rgba(7,9,13,.72);border-color:var(--gate-2);color:var(--gate-ink);z-index:2}
+.emo .body{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.emo .sig{color:var(--ink-2);font-style:italic}
+.emo blockquote{margin:0;font-size:14.5px;line-height:1.5;padding-left:12px;border-left:2px solid var(--flash)}
+.emo dl{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;margin:0;font-size:14px}
+.emo dt{font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);padding-top:6px}
+.emo dd{margin:0;line-height:1.4}
+.emo .tell{font-size:14.5px;background:var(--paper);border-radius:8px;padding:10px 12px}
+.emo .foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:auto}
+.pairs{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.pair .duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.pair .duo figure{margin:0}
+.pair figcaption{font-family:var(--f-mono);font-size:12px;text-align:center;margin-top:6px;color:var(--ink-2)}
+
+/* lab */
+.lab{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:28px;align-items:start}
+.lab-left{position:sticky;top:76px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:900px){.lab{grid-template-columns:minmax(0,1fr)}.lab-left{position:static}.lab-left .gate{max-width:360px;margin:0 auto;width:100%}}
+.reads{display:flex;flex-direction:column;gap:5px}
+.rbar{display:grid;grid-template-columns:90px minmax(0,1fr) 40px;gap:8px;align-items:center;font-size:13.5px}
+.rbar .t{height:8px;background:var(--paper);border-radius:4px;overflow:hidden}
+.rbar .t i{display:block;height:100%;background:var(--viz);border-radius:0 4px 4px 0}
+.rbar.top .t i{background:var(--flash)}
+.rbar .v{font-family:var(--f-mono);font-size:12px;text-align:right;color:var(--ink-3)}
+.sliders{display:flex;flex-direction:column;gap:22px}
+.sgroup h3{font-size:20px;margin-bottom:8px}
+.srow{display:grid;grid-template-columns:52px minmax(0,1fr) minmax(90px,170px) 34px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.srow .code{font-family:var(--f-mono);font-weight:600;font-size:13px}
+.srow .nm{font-size:14.5px;font-weight:700;line-height:1.2}
+.srow .ms{display:block;font-size:12px;color:var(--ink-3);font-weight:400}
+.srow input{width:100%;-webkit-appearance:none;appearance:none;height:22px;background:transparent;cursor:pointer}
+.srow input::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--flash) var(--p,0%),var(--line) var(--p,0%))}
+.srow input::-moz-range-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--flash) var(--p,0%),var(--line) var(--p,0%))}
+.srow input::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--panel);border:2px solid var(--ink);margin-top:-6px}
+.srow input::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--panel);border:2px solid var(--ink)}
+.srow output{font-family:var(--f-mono);font-size:12px;text-align:right;color:var(--ink-2)}
+.srow.lit .code{color:var(--flash-ink)}
+@media (max-width:520px){.srow{grid-template-columns:44px minmax(0,1fr) 30px}.srow input{grid-column:1/-1;grid-row:2}}
+
+/* trainer */
+.train{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+@media (max-width:900px){.train{grid-template-columns:minmax(0,1fr)}}
+.stage{max-width:470px;margin:0 auto;width:100%;padding:34px 40px 40px;scroll-margin-top:72px}
+.stage .layer{position:relative}
+.stage .layer.over{position:absolute;inset:34px 40px 40px}
+.stage-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;pointer-events:none}
+.stage-msg span{font-family:var(--f-display);font-weight:800;font-size:64px;color:var(--gate-ink);text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.pad{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;max-width:560px;margin:14px auto 0}
+.pad button{display:flex;justify-content:space-between;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--panel);border-radius:9px;padding:11px 12px;font-weight:700;cursor:pointer;font-size:15px}
+.pad button:hover:not([disabled]){border-color:var(--ink)}
+.pad button[disabled]{opacity:.5;cursor:default}
+.pad button.right{border-color:var(--good);background:var(--good-bg);color:var(--good);opacity:1}
+.pad button.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);opacity:1}
+.fb{max-width:560px;margin:14px auto 0;min-height:64px}
+.side{display:flex;flex-direction:column;gap:16px}
+.side .card{display:flex;flex-direction:column;gap:12px}
+.ladder{display:flex;gap:4px;align-items:flex-end;height:46px}
+.ladder i{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:3px 3px 0 0}
+.ladder i.on{background:var(--flash);border-color:var(--flash)}
+.dots{display:flex;flex-wrap:wrap;gap:4px}
+.dots i{width:12px;height:12px;border-radius:3px;background:var(--paper);border:1px solid var(--line)}
+.dots i.ok{background:var(--good);border-color:var(--good)}
+.dots i.no{background:var(--bad);border-color:var(--bad)}
+.dots i.cur{border-color:var(--flash);border-width:2px}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.summary{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.tile .big{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1}
+.tile .lbl{font-size:13px;color:var(--ink-3)}
+
+/* fake */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:720px}
+.vs figure{margin:0;display:flex;flex-direction:column;gap:10px}
+.vs .gate{padding:10px 24px}
+.choice{width:100%}
+.choice.right{background:var(--good);border-color:var(--good);color:var(--paper)}
+.choice.wrong{background:var(--bad);border-color:var(--bad);color:var(--paper)}
+@media (max-width:520px){.vs{gap:8px}.vs .gate{padding:6px 16px}}
+
+/* mirror */
+.mirror{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.mirror{grid-template-columns:minmax(0,1fr)}}
+.shot{aspect-ratio:4/5;max-width:100%;background:var(--gate);border-radius:var(--r);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--gate-dim);font-family:var(--f-mono);font-size:12px;text-align:center;padding:20px}
+.shot img{width:100%;height:100%;object-fit:cover}
+.drop{border:1.5px dashed var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.drop.over{border-color:var(--flash)}
+.checklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checklist li{display:grid;grid-template-columns:24px 56px minmax(0,1fr);gap:8px;align-items:start;font-size:14.5px}
+.checklist .mk{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.checklist .mk.y{background:var(--good-bg);color:var(--good)}
+.checklist .mk.n{background:var(--bad-bg);color:var(--bad)}
+.checklist input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--good)}
+.ring{font-family:var(--f-display);font-weight:800;font-size:64px;line-height:1}
+
+/* progress */
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12.5px;padding:6px 9px;border-radius:7px;white-space:nowrap;transform:translate(-50%,-115%);z-index:5;line-height:1.35}
+.tip[hidden]{display:none}
+.mx-wrap{overflow-x:auto}
+table.mx{border-collapse:separate;border-spacing:3px;font-size:12.5px;min-width:520px}
+.mx th{font-weight:700;color:var(--ink-2);font-size:12px;padding:4px}
+.mx th.rh{text-align:right;white-space:nowrap}
+.mx td{width:56px;height:40px;text-align:center;border-radius:6px;font-family:var(--f-mono);font-variant-numeric:tabular-nums;cursor:default}
+.mx td.dg{outline:2px solid var(--ink);outline-offset:-2px}
+.ebars{display:flex;flex-direction:column;gap:8px}
+.ebar{display:grid;grid-template-columns:96px minmax(0,1fr) 96px;gap:10px;align-items:center;font-size:14px}
+.ebar .t{height:12px;background:var(--paper);border-radius:0 4px 4px 0;position:relative}
+.ebar .t i{position:absolute;left:0;top:0;bottom:0;background:var(--viz);border-radius:0 4px 4px 0}
+.ebar .v{font-family:var(--f-mono);font-size:12px;text-align:right;color:var(--ink-2);white-space:nowrap}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--viz-weak);color:var(--ink);border-radius:10px;padding:10px 14px;font-size:14.5px}
+.sync{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.sv-t{font-family:var(--f-mono);font-size:12px}
+.sv-ink{fill:var(--ink)}.sv-ink2{fill:var(--ink-2)}.sv-ink3{fill:var(--ink-3)}.sv-onflash{fill:var(--on-flash)}
+.sv-flash{fill:var(--flash)}.sv-vizw{fill:var(--viz-weak)}
+.sv-line{stroke:var(--ink-3);stroke-width:1}.sv-line2{stroke:var(--ink-3);stroke-width:1;opacity:.6}
+.sv-grid{stroke:var(--line);stroke-width:1}
+.sv-area{fill:var(--viz);opacity:.12}.sv-linev{stroke:var(--viz);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.sv-dot{fill:var(--viz);stroke:var(--panel);stroke-width:2}.sv-dotlast{fill:var(--viz);stroke:var(--panel);stroke-width:2.5}
+footer{border-top:1px solid var(--line);padding-block:26px 40px;color:var(--ink-3);font-size:13.5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="slate">
+  <div class="wrap slate-in">
+    <a class="brand" href="#primer"><span class="mark" aria-hidden="true"></span>FLICKER</a>
+    <span class="fps" title="Film runs at 25 frames per second">25 fps · 1 frame = 40 ms</span>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-go="primer">Primer</button>
+      <button class="tab" role="tab" data-go="atlas">Atlas</button>
+      <button class="tab" role="tab" data-go="lab">Face Lab</button>
+      <button class="tab" role="tab" data-go="train">Flash Trainer</button>
+      <button class="tab" role="tab" data-go="fake">Spot the Fake</button>
+      <button class="tab" role="tab" data-go="mirror">Mirror</button>
+      <button class="tab" role="tab" data-go="progress">Progress</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ================= PRIMER ================= -->
+<section class="view wrap" id="v-primer" data-view="primer">
+  <div class="hero">
+    <div class="stack">
+      <span class="eyebrow">Micro-expression trainer</span>
+      <h1>A whole emotion in 40&nbsp;milli&shy;seconds</h1>
+      <p class="lede">When someone hides a strong feeling, the full expression can leak across their face for a single frame before the mask snaps back. Flicker teaches you the seven universal expressions muscle by muscle, then trains your eye to catch them at full speed.</p>
+      <div class="row" style="margin-top:6px">
+        <a class="btn flash" href="#train">Start flash training</a>
+        <a class="btn ghost" href="#atlas">Learn the seven faces</a>
+      </div>
+    </div>
+    <div class="gate" id="heroGate" aria-live="polite">
+      <span class="hud tl">CAM A · <b id="heroRec">LIVE</b></span>
+      <span class="hud tr tnum" id="heroTc">00:00:00</span>
+      <div id="heroFace"></div>
+      <div class="hero-cap"><span id="heroQ">Watch the face.</span><button class="btn sm ghost" id="heroBtn" style="color:var(--gate-ink);border-color:var(--gate-2)">Flash again</button></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <span class="eyebrow">The big idea</span>
+      <h2>Light under a closed door</h2>
+      <p class="lede">The mask is the door: shut, controlled, polite. The emotion is the lit room behind it. For a split second, the gap at the bottom gives it away. That gap is a micro-expression: a complete, involuntary expression lasting roughly 1/25 to 1/2 of a second.</p>
+    </div>
+    <div class="card scale-box" id="scaleBox" aria-label="Duration scale comparing micro-expressions, blinks and ordinary expressions"></div>
+    <div class="cols-3" style="margin-top:18px">
+      <div class="card kind"><span class="eyebrow">Macro</span><span class="num tnum">0.5–4 s</span><p>The everyday expression. Whole face, easy to see, often deliberate. What you read in conversation without trying.</p></div>
+      <div class="card kind"><span class="eyebrow">Micro</span><span class="num tnum">&lt;0.5 s</span><p>Full expression, compressed in time. Appears when a feeling is being concealed, or is so new the person hasn't registered it yet.</p></div>
+      <div class="card kind"><span class="eyebrow">Subtle</span><span class="num">Low-intensity</span><p>Any duration, but faint or in one region only: a brow twitch, a lip press. Often the first ripple of an emotion, or one being held down.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <span class="eyebrow">The machinery · FACS</span>
+      <h2>Keys and chords</h2>
+      <p class="lede">The Facial Action Coding System (Ekman &amp; Friesen, 1978) numbers every visible muscle movement as an Action Unit, or AU. Think of AUs as piano keys and emotions as chords. You don't memorise a picture of "sad"; you learn that sadness is the chord 1 + 4 + 15, and then you can hear it in any face. Press a chord.</p>
+    </div>
+    <div class="card">
+      <div class="row" id="chordBtns" style="margin-bottom:16px"></div>
+      <div class="keys" id="keys"></div>
+      <div class="chord-out">
+        <div class="gate thin" id="chordFace"></div>
+        <div class="stack" style="gap:8px">
+          <span class="formula" id="chordFormula">AU 1 + 4 + 15</span>
+          <p id="chordText" class="muted"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <span class="eyebrow">Where to look</span>
+      <h2>Three zones, one story</h2>
+    </div>
+    <div class="zones">
+      <div class="gate thin" id="zoneFace"></div>
+      <div class="zlist">
+        <div><span class="eyebrow">Brow</span><p>Forehead and eyebrows. The hardest zone to control on purpose, so it leaks the most. Sadness and fear live here.</p></div>
+        <div><span class="eyebrow">Eyes</span><p>Lids and cheeks. Width tells arousal (surprise, fear); tightness tells intent (anger); crinkles tell real joy.</p></div>
+        <div><span class="eyebrow">Mouth</span><p>Lips, chin and jaw. The most watched zone, so it is the most managed. People smile over everything else.</p></div>
+        <p class="callout"><span class="q">Read the face like a three-panel comic.</span><br><span class="muted">One panel can lie. When the brow, eyes and mouth tell different stories, the brow is usually the honest one.</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <span class="eyebrow">Use it well</span>
+      <h2>A smoke alarm, not a fire report</h2>
+      <p class="lede">A micro-expression tells you that an emotion fired. It doesn't tell you why, or what the person will do about it.</p>
+    </div>
+    <div class="cols-3">
+      <div class="card kind"><span class="eyebrow">Which, not why</span><p>An innocent person afraid of being disbelieved shows the same fear as a guilty one afraid of being caught. Ekman called misreading this the Othello error.</p></div>
+      <div class="card kind"><span class="eyebrow">Not a lie detector</span><p>Across hundreds of studies, people spot lies at about 54%, barely above a coin flip. Faces flag hot spots worth asking about; they don't deliver verdicts.</p></div>
+      <div class="card kind"><span class="eyebrow">Context matters</span><p>How universal the basic expressions are is still debated, and culture shapes when people show them. Treat every read as a hypothesis, then check it against words, voice and situation.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <span class="eyebrow">Training loop</span>
+      <h2>Learn, build, speed up, verify</h2>
+    </div>
+    <div class="loop">
+      <a href="#atlas"><span class="st">STEP 1 · ATLAS</span><strong>Learn the chords</strong><span class="muted">Seven expressions, their AUs, and the pairs people confuse.</span></a>
+      <a href="#lab"><span class="st">STEP 2 · FACE LAB</span><strong>Build them by hand</strong><span class="muted">Move each muscle and watch what the face starts to say.</span></a>
+      <a href="#train"><span class="st">STEP 3 · FLASH</span><strong>Read them at speed</strong><span class="muted">Adaptive flashes from 500 ms down to a single frame.</span></a>
+      <a href="#fake"><span class="st">STEP 4 · VERIFY</span><strong>Real or posed?</strong><span class="muted">Reliable muscles, symmetry and timing. Then try your own face in Mirror.</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ATLAS ================= -->
+<section class="view wrap" id="v-atlas" data-view="atlas" hidden>
+  <div class="sec-head">
+    <span class="eyebrow">Atlas · baseline + 7 universal expressions</span>
+    <h2>The seven chords</h2>
+    <p class="lede">Start from neutral: you read change against a person's own baseline. Each expression card gives the message it sends, its AU chord, what to look for in each zone, and the look-alike it gets mistaken for. Press play to watch the onset.</p>
+  </div>
+  <div class="row" style="margin-bottom:18px"><span class="eyebrow">Face</span><div class="row" id="atlasActors"></div></div>
+  <div class="atlas" id="atlasGrid"></div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <span class="eyebrow">Look-alikes</span>
+      <h2>The four classic confusions</h2>
+      <p class="lede">Most misreads happen inside these pairs. Learn the one muscle that separates them, then drill the pair until it's automatic.</p>
+    </div>
+    <div class="pairs" id="pairGrid"></div>
+  </div>
+</section>
+
+<!-- ================= LAB ================= -->
+<section class="view wrap" id="v-lab" data-view="lab" hidden>
+  <div class="sec-head">
+    <span class="eyebrow">Face Lab · 17 action units</span>
+    <h2>Play the face like an instrument</h2>
+    <p class="lede">Every slider is one muscle. Start from a preset or from neutral, and watch the read-out decide what the face is saying. Try removing one AU from a chord to feel how much it carries.</p>
+  </div>
+  <div class="lab">
+    <div class="lab-left">
+      <div class="gate" id="labGate"><span class="hud tl" id="labFormula">NEUTRAL</span><div id="labFace"></div></div>
+      <div class="row" id="labActors"></div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">Reads as</span><span class="chip" id="labTop">Neutral</span></div>
+        <div class="reads" id="labReads"></div>
+      </div>
+      <div class="row">
+        <button class="btn sm" id="labFlash">Flash it at 120 ms</button>
+        <button class="btn sm ghost" id="labMirror" aria-pressed="false">Symmetry: both sides</button>
+        <button class="btn sm ghost" id="labReset">Reset to neutral</button>
+      </div>
+    </div>
+    <div class="stack" style="gap:20px">
+      <div class="row" id="labPresets"><span class="eyebrow" style="margin-right:4px">Presets</span></div>
+      <div class="sliders" id="labSliders"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRAIN ================= -->
+<section class="view wrap" id="v-train" data-view="train" hidden>
+  <div class="sec-head">
+    <span class="eyebrow">Flash Trainer · METT-style</span>
+    <h2>Catch the frame</h2>
+    <p class="lede">A neutral face, a flash of one expression, then neutral again. Name what you saw. In adaptive mode the flash gets shorter after two right answers in a row and longer after a miss, so you train right at the edge of your speed.</p>
+  </div>
+  <div class="train">
+    <div>
+      <div class="gate stage" id="stage">
+        <span class="hud tl" id="hudTrial">TRIAL 0/14</span>
+        <span class="hud tr" id="hudExp">EXPOSURE <b>200 ms</b></span>
+        <span class="hud bl" id="hudMeasured">&nbsp;</span>
+        <span class="hud br" id="hudFace">&nbsp;</span>
+        <div class="layer" id="stN"></div>
+        <div class="layer over" id="stE" hidden></div>
+        <div class="stage-msg" id="stageMsg"><span></span></div>
+      </div>
+      <div class="pad" id="pad"></div>
+      <div class="fb" id="fb"><div class="row" style="justify-content:center"><button class="btn flash" id="startBtn">Start session <span class="kbd">Space</span></button></div></div>
+      <div id="sumBox" hidden style="max-width:720px;margin:24px auto 0"></div>
+    </div>
+    <aside class="side">
+      <div class="card">
+        <span class="eyebrow">Speed · ms</span>
+        <div class="seg" id="optSpeed"></div>
+        <span class="eyebrow">Region</span>
+        <div class="seg" id="optRegion"></div>
+        <span class="eyebrow">Intensity</span>
+        <div class="seg" id="optIntensity"></div>
+        <div id="drillNote" class="banner" hidden></div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between"><span class="eyebrow">Exposure ladder</span><span class="mono" id="ladderLbl" style="font-size:12px">200 ms</span></div>
+        <div class="ladder" id="ladder" aria-hidden="true"></div>
+        <span class="eyebrow">This session</span>
+        <div class="dots" id="dots"></div>
+        <p class="muted" style="font-size:13.5px">Keys <span class="kbd">1</span>–<span class="kbd">7</span> answer, <span class="kbd">Space</span> next, <span class="kbd">R</span> replays the flash.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= FAKE ================= -->
+<section class="view wrap" id="v-fake" data-view="fake" hidden>
+  <div class="sec-head">
+    <span class="eyebrow">Spot the Fake · 6 rounds</span>
+    <h2>Felt or performed?</h2>
+    <p class="lede">Some muscles are hard to move on command. Ekman called them reliable muscles: when they're missing, the expression is probably posed. Timing gives fakes away too. Felt expressions rise like a dimmer; posed ones snap on like a switch.</p>
+  </div>
+  <div class="stack" style="gap:16px">
+    <div class="row" style="justify-content:space-between;max-width:720px"><span class="eyebrow" id="fkRound">Round 1 of 6</span><span class="dots" id="fkDots"></span></div>
+    <h3 id="fkTitle" style="max-width:720px"></h3>
+    <p id="fkPrompt" class="muted"></p>
+    <div class="vs" id="fkVs"></div>
+    <div class="row" id="fkPlayRow"><button class="btn sm ghost" id="fkPlay">Play both onsets</button><span class="muted" id="fkPlayHint" style="font-size:13.5px"></span></div>
+    <div id="fkFb" style="max-width:720px"></div>
+  </div>
+</section>
+
+<!-- ================= MIRROR ================= -->
+<section class="view wrap" id="v-mirror" data-view="mirror" hidden>
+  <div class="sec-head">
+    <span class="eyebrow">Mirror · produce it yourself</span>
+    <h2>Make the face</h2>
+    <p class="lede">Producing an expression teaches your eye what to look for. Pick a target, make the face, and take a photo. Claude checks which action units actually fired and coaches the one you missed.</p>
+  </div>
+  <div class="row" id="mrTargets" style="margin-bottom:18px"></div>
+  <div class="mirror">
+    <div class="stack">
+      <div class="grid-2" style="gap:12px">
+        <figure style="margin:0" class="stack"><div class="gate thin" id="mrFace"></div><figcaption class="mono muted" style="font-size:12px;text-align:center">Target</figcaption></figure>
+        <figure style="margin:0" class="stack"><div class="shot" id="mrShot">Your photo appears here</div><figcaption class="mono muted" style="font-size:12px;text-align:center">You</figcaption></figure>
+      </div>
+      <div class="drop" id="mrDrop">
+        <label class="btn flash" for="mrFile" style="align-self:flex-start">Take or choose a photo</label>
+        <input type="file" id="mrFile" accept="image/jpeg,image/png,image/webp" capture="user" hidden>
+        <span class="muted" style="font-size:13.5px">On a phone this opens the front camera. You can also drop an image here. Face the camera, good light, whole face in frame.</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card stack" style="gap:10px">
+        <span class="eyebrow">Recipe for <span id="mrName">Sadness</span></span><span class="muted" style="font-size:13.5px">Tick each movement you can see in your photo.</span>
+        <ul class="checklist" id="mrRecipe"></ul>
+      </div>
+      <div class="row"><button class="btn" id="mrGrade" disabled>Grade my expression</button><span class="muted" id="mrStatus" style="font-size:13.5px"></span></div>
+      <div id="mrResult"></div>
+      <p class="muted" style="font-size:13px">Your photo goes to Claude on your own account for this one answer. Flicker doesn't keep it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROGRESS ================= -->
+<section class="view wrap" id="v-progress" data-view="progress" hidden>
+  <div class="sec-head">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">Progress</span><span class="sync" id="syncLbl">Saved in this browser</span></div>
+    <h2>Your eye, measured</h2>
+  </div>
+  <div id="pgBanner" class="banner" hidden style="margin-bottom:16px"></div>
+  <div class="tiles" id="pgTiles"></div>
+  <div class="grid-2 sec" style="margin-top:22px">
+    <div class="card stack">
+      <div class="stack" style="gap:4px"><h3>Speed threshold</h3><p class="muted" style="font-size:14px">Average exposure you held in the second half of each adaptive session. Fewer milliseconds is faster, so up is better.</p></div>
+      <div class="chart" id="pgLine"></div>
+    </div>
+    <div class="card stack">
+      <div class="stack" style="gap:4px"><h3>Accuracy by expression</h3><p class="muted" style="font-size:14px">All flash trials, all speeds.</p></div>
+      <div class="ebars" id="pgBars"></div>
+    </div>
+  </div>
+  <div class="card stack" style="margin-top:22px">
+    <div class="stack" style="gap:4px"><h3>Confusion matrix</h3><p class="muted" style="font-size:14px">Rows are what flashed, columns are what you answered. The outlined diagonal is correct. Dark cells off the diagonal are your blind spots.</p></div>
+    <div class="mx-wrap chart" id="pgMx"></div>
+    <div id="pgSpot"></div>
+  </div>
+  <div class="row" style="margin-top:22px" id="pgReset"></div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap stack" style="gap:6px">
+    <span>Flicker draws every face procedurally from FACS action units (Ekman &amp; Friesen, 1978). Training method modelled on Ekman's Micro Expression Training Tool. No photos of real people are used or stored.</span>
+  </div>
+</footer>
+<script>
+// ===================== DATA =====================
+const EMO = ['happiness','sadness','surprise','fear','anger','disgust','contempt'];
+const LBL = {happiness:'Happiness',sadness:'Sadness',surprise:'Surprise',fear:'Fear',anger:'Anger',disgust:'Disgust',contempt:'Contempt',neutral:'Neutral'};
+
+const AU_INFO = [
+  {k:'AU1', n:'Inner brow raiser', m:'Frontalis, medial', z:'brow'},
+  {k:'AU2', n:'Outer brow raiser', m:'Frontalis, lateral', z:'brow'},
+  {k:'AU4', n:'Brow lowerer', m:'Corrugator, depressor supercilii', z:'brow'},
+  {k:'AU5', n:'Upper lid raiser', m:'Levator palpebrae superioris', z:'eyes'},
+  {k:'AU6', n:'Cheek raiser', m:'Orbicularis oculi, orbital part', z:'eyes'},
+  {k:'AU7', n:'Lid tightener', m:'Orbicularis oculi, palpebral part', z:'eyes'},
+  {k:'AU9', n:'Nose wrinkler', m:'Levator labii sup. alaeque nasi', z:'mid'},
+  {k:'AU10', n:'Upper lip raiser', m:'Levator labii superioris', z:'mid'},
+  {k:'AU12', n:'Lip corner puller', m:'Zygomaticus major', z:'mouth', lr:true},
+  {k:'AU14', n:'Dimpler', m:'Buccinator', z:'mouth', lr:true},
+  {k:'AU15', n:'Lip corner depressor', m:'Depressor anguli oris', z:'mouth'},
+  {k:'AU17', n:'Chin raiser', m:'Mentalis', z:'mouth'},
+  {k:'AU20', n:'Lip stretcher', m:'Risorius, platysma', z:'mouth'},
+  {k:'AU23', n:'Lip tightener', m:'Orbicularis oris', z:'mouth'},
+  {k:'AU24', n:'Lip pressor', m:'Orbicularis oris', z:'mouth'},
+  {k:'AU25', n:'Lips part', m:'Depressor labii inferioris', z:'mouth'},
+  {k:'AU26', n:'Jaw drop', m:'Masseter relaxes', z:'mouth'},
+];
+const AU_BY = Object.fromEntries(AU_INFO.map(a=>[a.k,a]));
+const UPPER_AUS = ['AU1','AU2','AU4','AU5','AU6','AU7','AU9'];
+const LOWER_AUS = ['AU9','AU10','AU12','AU14','AU15','AU17','AU20','AU23','AU24','AU25','AU26'];
+
+// Prototype chords (EMFACS-style), intensities 0..1. Suffix L/R = one side only.
+const TPL = {
+  neutral:{},
+  happiness:{AU6:.85, AU12:1, AU25:.6},
+  sadness:{AU1:1, AU4:.6, AU15:.85, AU17:.45, gazeY:.6},
+  surprise:{AU1:1, AU2:1, AU5:.8, AU25:.6, AU26:.7},
+  fear:{AU1:.9, AU2:.7, AU4:.65, AU5:1, AU7:.25, AU20:1, AU25:.7, AU26:.25},
+  anger:{AU4:1, AU5:.65, AU7:.85, AU23:.9, AU24:.55, AU17:.3},
+  disgust:{AU9:1, AU10:.85, AU4:.35, AU6:.35, AU15:.35, AU17:.45, AU25:.15},
+  contempt:{AU12R:.75, AU14R:1},
+};
+const CHORD = {
+  happiness:['6','12'], sadness:['1','4','15'], surprise:['1','2','5','26'], fear:['1','2','4','5','20','26'],
+  anger:['4','5','7','23'], disgust:['9','10','17'], contempt:['R12','R14']
+};
+
+const ATLAS = {
+  neutral:{signal:'Baseline. Nothing to report yet.',
+    analogy:'A tuning fork: you only hear a note go sharp if you know the pitch it started at. Read change from this person\'s own resting face, not from a textbook face.',
+    zones:['Relaxed; note any lines this person always has','Lids at rest, upper lid just touching the iris','Lips together, corners at their own resting height'],
+    tell:'Some faces look sad, stern or amused at rest because of low brows or downturned corners. Learn someone\'s neutral before calling an emotion.',
+    pair:null, zone:null},
+  happiness:{signal:'This is good. Stay, connect.',
+    analogy:'The mouth can be ordered to smile; the eyes have to be invited. A felt smile pushes the cheeks up until the eyes crinkle, like a curtain being lifted from below.',
+    zones:['Neutral, or the outer ends dip slightly as the cheeks lift','Narrowed from below, crow\'s feet at the outer corners','Corners pulled up and back; teeth often show'],
+    tell:'The Duchenne marker: AU 6 creates crow\'s feet and bags under the eyes. A smile with AU 12 alone is the polite, social smile.',
+    pair:'contempt', zone:'eyes'},
+  sadness:{signal:'I\'ve lost something. I need support.',
+    analogy:'A tent with its centre pole pushed up and its corners staked down: inner brows rise, lip corners sink.',
+    zones:['Inner corners pulled up and together into an upside-down V','Upper lids droop; gaze often drops','Corners down, chin raised and dimpled, lower lip may pout'],
+    tell:'Inner brows up and together (AU 1+4). Few people can do it on purpose, so it\'s one of the most reliable tells. Darwin called these the grief muscles.',
+    pair:'fear', zone:'brow'},
+  surprise:{signal:'That was unexpected. Gathering information.',
+    analogy:'A camera snapping its aperture wide open: every channel opens to let more light in.',
+    zones:['Raised and curved; long horizontal forehead lines','Wide open, white showing above the iris','Jaw drops loose; lips relaxed, not stretched'],
+    tell:'The briefest emotion. Real surprise is gone within a second; a surprised face that lingers is usually performed.',
+    pair:'fear', zone:'brow'},
+  fear:{signal:'Threat ahead. Get ready to escape.',
+    analogy:'Surprise with the handbrake pulled: the same wide eyes, but the brows are yanked together and the lips stretch back like someone bracing for impact.',
+    zones:['Raised AND drawn together, so they sit flat and straight','Upper lids raised high, lower lids tense','Lips stretched sideways toward the ears; neck cords may show'],
+    tell:'The flat, pinched brow (AU 1+2+4) is the signature and is hard to produce on command. Surprise asks "what?"; fear asks "how do I get out?"',
+    pair:'surprise', zone:'brow'},
+  anger:{signal:'Something is in my way. Remove it.',
+    analogy:'A clenched fist made of face: everything tightens and points inward at the target.',
+    zones:['Lowered and pulled together; vertical lines between the brows','A glare: upper lid raised, lower lid tense','Lips pressed thin, or squared open as if shouting'],
+    tell:'Watch the lips first. They narrow and press (AU 23/24) before the brows move, like a pressure valve closing. Lip narrowing is hard to fake.',
+    pair:'disgust', zone:'mouth'},
+  disgust:{signal:'Reject this. It\'s offensive or contaminating.',
+    analogy:'The face trying to shut the nostrils and spit something out. The same reflex fires for spoiled milk and for a rotten idea.',
+    zones:['Lowered, partly dragged down by the nose wrinkle','Narrowed from below as the cheeks rise','Upper lip raised, nose wrinkled, chin may push up'],
+    tell:'The nose wrinkle (AU 9) and the raised upper lip (AU 10). A quick nose wrinkle often flashes when people hear something distasteful.',
+    pair:'anger', zone:'mid'},
+  contempt:{signal:'I\'m above you. This is beneath me.',
+    analogy:'A seesaw tipped to one side: one lip corner rises because the person feels a notch above you.',
+    zones:['Neutral','Neutral; sometimes an eye roll or a look down the nose','One corner tightened and slightly raised, with a dimple on that side'],
+    tell:'The only universal expression that is one-sided. In John Gottman\'s marriage research, contempt was among the strongest predictors of divorce.',
+    pair:'happiness', zone:'mouth'},
+};
+
+const PAIRS = [
+  {a:'fear', b:'surprise', zone:'brow', key:'Both widen the eyes. Fear pulls the brows together (AU 4) and stretches the lips sideways (AU 20). Surprise leaves the brows curved and the jaw loose.'},
+  {a:'anger', b:'disgust', zone:'mid', key:'Both lower the brows. Anger narrows and presses the lips; disgust wrinkles the nose and lifts the upper lip into a sneer.'},
+  {a:'contempt', b:'happiness', zone:'mouth', key:'A smile is symmetric and climbs into the eyes. Contempt is lopsided, tight, and stays in the mouth.'},
+  {a:'sadness', b:'fear', zone:'eyes', key:'Both raise the inner brows. Sadness lets the lids droop and turns the mouth down; fear raises the lids wide and stretches the mouth.'},
+];
+const TIPS = {
+  'fear|surprise':PAIRS[0].key, 'anger|disgust':PAIRS[1].key, 'contempt|happiness':PAIRS[2].key, 'fear|sadness':PAIRS[3].key,
+  'disgust|sadness':'Both can pull the lip corners down. Disgust adds the nose wrinkle and raised upper lip; sadness raises the inner brows.',
+  'anger|fear':'Anger lowers the brows into a V and narrows the lips. Fear raises the brows and stretches the lips wide.',
+  'anger|sadness':'Anger pulls the whole brow down. Sadness lifts the inner corners up; the angle of the brow tells them apart.',
+  'contempt|disgust':'Disgust is centred on the nose and upper lip and is symmetric. Contempt is a one-sided tightening at a single lip corner.',
+};
+function tipFor(a,b){ return TIPS[[a,b].sort().join('|')] || null; }
+
+const ACTORS = [
+  {id:'ama', name:'Ama', skin:'#7B4A2D', shade:'#5F371F', crease:'rgba(36,14,4,.78)', lip:'#5E302A', hair:'#16100C', style:'curly', iris:'#3A2414', brow:'#140D09', fw:63, jw:41, eg:24, bw:4.4, shirt:'#C9A227'},
+  {id:'ravi', name:'Ravi', skin:'#B27B52', shade:'#8F5E3B', crease:'rgba(60,28,10,.7)', lip:'#89504A', hair:'#14100E', style:'short', iris:'#2C1C10', brow:'#16110E', fw:64, jw:43, eg:24.5, bw:5.2, shirt:'#3E6A8A'},
+  {id:'lin', name:'Lin', skin:'#E8C6A4', shade:'#CDA27E', crease:'rgba(110,60,30,.55)', lip:'#C27A70', hair:'#1C1918', style:'long', iris:'#3A2A20', brow:'#2A2220', fw:60, jw:37, eg:23.5, bw:3.6, shirt:'#7A4E6E'},
+  {id:'mateo', name:'Mateo', skin:'#C99470', shade:'#AA7653', crease:'rgba(80,40,18,.62)', lip:'#9E5E55', hair:'#3A291D', style:'buzz', iris:'#4A3422', brow:'#2E2018', fw:65, jw:45, eg:24.5, bw:4.8, shirt:'#5B7A4A'},
+  {id:'noor', name:'Noor', skin:'#9D6B45', shade:'#7E5132', crease:'rgba(48,22,8,.72)', lip:'#7C463D', hair:'#0F0C0B', style:'bun', iris:'#2A1A10', brow:'#120E0C', fw:61, jw:38, eg:23.5, bw:4.0, shirt:'#B5543C'},
+  {id:'elena', name:'Elena', skin:'#F2D5C0', shade:'#DCB199', crease:'rgba(120,64,40,.5)', lip:'#CC857C', hair:'#A0602F', style:'long', iris:'#55798A', brow:'#7A4A28', fw:61, jw:38, eg:23.5, bw:3.6, shirt:'#2F5D62'},
+  {id:'walt', name:'Walt', skin:'#E0B497', shade:'#C4917379', crease:'rgba(105,56,34,.62)', lip:'#B5786E', hair:'#C9C6C2', style:'bald', iris:'#5A6B72', brow:'#B9B3AD', fw:64, jw:44, eg:24.5, bw:4.6, shirt:'#4A4E5E', age:1},
+];
+ACTORS[6].shade = '#C49173';
+const ACT_BY = Object.fromEntries(ACTORS.map(a=>[a.id,a]));
+
+// ===================== FACE ENGINE =====================
+let FUID = 0;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const f1 = n => (Math.round(n*10)/10);
+function g(au,k,side){ const v = au[k+side]; return v!=null ? v : (au[k]||0); }
+function bothSides(au,k){ return (g(au,k,'L')+g(au,k,'R'))/2; }
+
+function headPath(fw,jw,chinY){
+  return `M100,34 C${100+fw*.97},34 ${100+fw},76 ${100+fw},114 C${100+fw},150 ${100+jw+8},${chinY-10} 100,${chinY} C${100-jw-8},${chinY-10} ${100-fw},150 ${100-fw},114 C${100-fw},76 ${100-fw*.97},34 100,34Z`;
+}
+function hairFront(fw, hy=58){
+  return `M${100-fw-2},112 C${100-fw-6},38 ${100-fw*.6},22 100,22 C${100+fw*.6},22 ${100+fw+6},38 ${100+fw+2},112 C${100+fw-3},92 ${100+fw-7},${hy+12} ${100+fw-22},${hy+4} C120,${hy-3} 80,${hy-3} ${100-fw+22},${hy+4} C${100-fw+7},${hy+12} ${100-fw+3},92 ${100-fw-2},112Z`;
+}
+
+// Returns SVG markup for a face expressing `au` (object of AU intensities)
+function renderFace(auIn, A, opts={}){
+  const au = auIn || {};
+  const id = 'fc'+(++FUID);
+  const fw=A.fw, jw=A.jw, C=A.crease;
+  const a26=g(au,'AU26',''), a25=g(au,'AU25',''), a9=g(au,'AU9',''), a10=g(au,'AU10',''), a15=g(au,'AU15',''), a17=g(au,'AU17',''), a20=g(au,'AU20',''), a23=g(au,'AU23',''), a24=g(au,'AU24','');
+  const a12m = bothSides(au,'AU12');
+  const gy = 3*(au.gazeY||0);
+  const chinY = 206 + 11*a26;
+  const o = [];
+  o.push(`<svg viewBox="0 0 200 250" class="face" role="img" aria-label="${opts.label||'Face'}"><defs><clipPath id="${id}h"><path d="${headPath(fw,jw,chinY)}"/></clipPath></defs>`);
+  // back hair
+  if (A.style==='long') o.push(`<path d="M${100-fw-9},104 C${100-fw-16},26 ${100+fw+16},26 ${100+fw+9},104 L${100+fw+13},214 C${100+fw-8},226 ${100-fw+8},226 ${100-fw-13},214Z" fill="${A.hair}"/>`);
+  if (A.style==='bun') o.push(`<circle cx="100" cy="22" r="17" fill="${A.hair}"/>`);
+  if (A.style==='curly'){ for(let i=0;i<=12;i++){ const t=Math.PI*(1.0+i/12); o.push(`<circle cx="${f1(100+(fw+3)*Math.cos(t))}" cy="${f1(92+(fw+6)*Math.sin(t))}" r="15" fill="${A.hair}"/>`);} }
+  // neck + platysma + garment
+  o.push(`<path d="M76,168 L73,236 L127,236 L124,168Z" fill="${A.shade}"/>`);
+  if (a20>.05) o.push(`<g stroke="${C}" stroke-width="1.1" fill="none" opacity="${f1(.65*a20*100)/100}"><path d="M86,${190+a26*6} L78,232"/><path d="M114,${190+a26*6} L122,232"/><path d="M93,${196+a26*6} L90,232"/><path d="M107,${196+a26*6} L110,232"/></g>`);
+  o.push(`<path d="M0,250 L0,238 C26,224 52,216 72,212 C84,222 116,222 128,212 C148,216 174,224 200,238 L200,250Z" fill="${A.shirt}"/>`);
+  // ears
+  for (const s of [-1,1]) o.push(`<ellipse cx="${100+s*(fw-1)}" cy="120" rx="7.5" ry="13.5" fill="${A.skin}" stroke="${A.shade}" stroke-width="1.2"/>`);
+  // head
+  o.push(`<path d="${headPath(fw,jw,chinY)}" fill="${A.skin}"/>`);
+  o.push(`<g clip-path="url(#${id}h)">`);
+  // jaw shading
+  o.push(`<path d="M${100-fw},150 C${100-fw+8},${chinY-6} ${100+fw-8},${chinY-6} ${100+fw},150 L${100+fw},${chinY+20} L${100-fw},${chinY+20}Z" fill="${A.shade}" opacity=".18"/>`);
+  // forehead lines (AU1/AU2) + age lines
+  const a1m = bothSides(au,'AU1'), a2m = bothSides(au,'AU2');
+  const fl = clamp(.78*Math.max(a1m,a2m) + (A.age? .22:0));
+  if (fl>.03){
+    const hw = 13 + 22*(a2m/(a1m+a2m+.001)) + (A.age? 8:0);
+    const bend = 3*a1m - 1.5*a2m;
+    o.push(`<g stroke="${C}" stroke-width="1" fill="none" stroke-linecap="round" opacity="${f1(fl*100)/100}">`);
+    for (const [y,k] of [[66,1],[73,1.05],[80,.9]]) o.push(`<path d="M${f1(100-hw*k)},${y} Q100,${f1(y-bend-1)} ${f1(100+hw*k)},${y}"/>`);
+    o.push(`</g>`);
+  }
+  // glabella (AU4)
+  const a4m = bothSides(au,'AU4');
+  if (a4m>.05) o.push(`<g stroke="${C}" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="${f1(.85*a4m*100)/100}"><path d="M96,${86+3*a4m} Q95,92 96.5,${99}"/><path d="M104,${86+3*a4m} Q105,92 103.5,99"/></g>`);
+  if (a1m>.4 && a4m>.3) o.push(`<path d="M93,84 Q100,${80-2*a1m} 107,84" stroke="${C}" stroke-width=".9" fill="none" opacity="${f1(.5*a1m*100)/100}"/>`);
+
+  // nose
+  const ny = 141 - 2.6*a9 - 1.3*a10, nw = 12.5 + 2.2*a9 + .9*a10;
+  o.push(`<g fill="none" stroke="${C}" stroke-linecap="round"><path d="M93,${103} Q${92},124 ${f1(100-nw+3)},${f1(ny-7)}" stroke-width=".9" opacity=".28"/><path d="M107,103 Q108,124 ${f1(100+nw-3)},${f1(ny-7)}" stroke-width=".9" opacity=".28"/>`);
+  o.push(`<path d="M${f1(100-nw)},${f1(ny-3)} C${f1(100-nw-3.5)},${f1(ny+5)} 94,${f1(ny+7.5)} 100,${f1(ny+5.2)} C106,${f1(ny+7.5)} ${f1(100+nw+3.5)},${f1(ny+5)} ${f1(100+nw)},${f1(ny-3)}" stroke-width="1.35" opacity=".7"/></g>`);
+  o.push(`<ellipse cx="94.3" cy="${f1(ny+3.8)}" rx="${f1(2.7+.4*a9)}" ry="1.3" fill="${C}" opacity=".6"/><ellipse cx="105.7" cy="${f1(ny+3.8)}" rx="${f1(2.7+.4*a9)}" ry="1.3" fill="${C}" opacity=".6"/>`);
+  if (a9>.05) o.push(`<g stroke="${C}" stroke-width="1" fill="none" stroke-linecap="round" opacity="${f1(.85*a9*100)/100}"><path d="M93.5,117 Q100,114 106.5,117"/><path d="M93,122 Q100,119 107,122"/><path d="M92,113 L88,109"/><path d="M108,113 L112,109"/></g>`);
+
+  // mouth geometry
+  const corner = {};
+  for (const s of [-1,1]){
+    const side = s<0?'R':'L';
+    const a12=g(au,'AU12',side), a14=g(au,'AU14',side);
+    corner[s] = {
+      x: 100 + s*(21 + 7*a12 + 6.5*a20 + 1.6*a14 - 3*a23 - 2*a24 - 2*a26*(1-a20)),
+      y: 171 - 9*a12 - 1.7*a14 + 6*a15 + .8*a20 - 1*a10 + 4*a26 - .6*a17,
+      a12, a14
+    };
+  }
+  const cL = corner[-1], cR = corner[1];
+  const thin = 1 - .55*a23 - .6*a24 - .28*a12m - .2*a20;
+  const tu = 5.2*Math.max(.25,thin), tl = 6.4*Math.max(.3, thin + .15*a17);
+  const ulTop = 164.6 - 4.6*a10 - 1.2*a9 + .6*a12m - .5*a17;
+  const ulIn = ulTop + tu;
+  const gap = Math.max(0, 4.2*a25 + 16*a26 + 2.4*a10 - .8*a24 - .6*a23);
+  const llIn = ulIn + Math.max(0, gap - 1.4*a17);
+  const llOut = llIn + tl;
+  const cy0 = (cL.y + cR.y)/2;
+  const q = (mid)=> f1(2*mid - cy0);           // quadratic control y through mid
+  const cub = (mid)=> f1((mid - .25*cy0)/.75);   // cubic control y through mid
+  // nasolabial folds
+  for (const s of [-1,1]){
+    const c = corner[s];
+    const op = clamp(.16 + .55*Math.max(c.a12, a10*.9, a9*.8) + .1*bothSides(au,'AU6') + (A.age?.18:0));
+    o.push(`<path d="M${f1(100+s*(nw+1.5))},${f1(ny-2)} Q${f1(100+s*(nw+13+3*c.a12))},${f1(ny+12)} ${f1(c.x+s*5.5)},${f1(c.y+3)}" stroke="${C}" stroke-width="1.15" fill="none" stroke-linecap="round" opacity="${f1(op*100)/100}"/>`);
+  }
+  // philtrum
+  o.push(`<g stroke="${C}" stroke-width=".8" opacity=".22" fill="none"><path d="M97.6,${f1(ny+6)} L${f1(94.5)},${f1(ulTop)}"/><path d="M102.4,${f1(ny+6)} L105.5,${f1(ulTop)}"/></g>`);
+  // cavity + teeth
+  if (gap > .6){
+    const cav = `M${f1(cL.x)},${f1(cL.y)} Q100,${q(ulIn)} ${f1(cR.x)},${f1(cR.y)} Q100,${q(llIn)} ${f1(cL.x)},${f1(cL.y)}Z`;
+    o.push(`<clipPath id="${id}m"><path d="${cav}"/></clipPath><path d="${cav}" fill="#2A1012"/>`);
+    o.push(`<g clip-path="url(#${id}m)"><rect x="80" y="${f1(ulIn-2)}" width="40" height="${f1(Math.min(gap,5.8)+2)}" fill="#EEE8DD"/>`);
+    o.push(`<g stroke="#CFC6B8" stroke-width=".5"><path d="M93,${f1(ulIn)} v6"/><path d="M100,${f1(ulIn)} v6"/><path d="M107,${f1(ulIn)} v6"/></g>`);
+    if (gap > 9){ o.push(`<rect x="84" y="${f1(llIn-3.6)}" width="32" height="5" fill="#E4DDD0"/><ellipse cx="100" cy="${f1(llIn+1)}" rx="11" ry="4.5" fill="#8A3A40"/>`); }
+    o.push(`</g>`);
+  }
+  // lips
+  const peakY = f1(ulTop), dipY = f1(ulTop+1.7);
+  const upper = `M${f1(cL.x)},${f1(cL.y)} Q${f1((cL.x+93.5)/2)},${f1(ulTop+.45*(cL.y-ulTop))} 93.5,${peakY} Q97,${f1(ulTop+.4)} 100,${dipY} Q103,${f1(ulTop+.4)} 106.5,${peakY} Q${f1((cR.x+106.5)/2)},${f1(ulTop+.45*(cR.y-ulTop))} ${f1(cR.x)},${f1(cR.y)} Q100,${q(ulIn)} ${f1(cL.x)},${f1(cL.y)}Z`;
+  const lower = `M${f1(cL.x)},${f1(cL.y)} Q100,${q(llIn)} ${f1(cR.x)},${f1(cR.y)} C${f1(cR.x-6)},${cub(llOut)} ${f1(cL.x+6)},${cub(llOut)} ${f1(cL.x)},${f1(cL.y)}Z`;
+  o.push(`<path d="${lower}" fill="${A.lip}"/><path d="${lower}" fill="#fff" opacity=".07"/><path d="${upper}" fill="${A.lip}"/>`);
+  o.push(`<path d="M${f1(cL.x)},${f1(cL.y)} Q100,${q(ulIn)} ${f1(cR.x)},${f1(cR.y)}" stroke="#3A1A18" stroke-width="1.25" fill="none" opacity=".75" stroke-linecap="round"/>`);
+  // corner details
+  for (const s of [-1,1]){
+    const c = corner[s];
+    o.push(`<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="1" fill="${C}" opacity=".55"/>`);
+    if (c.a14>.05) o.push(`<path d="M${f1(c.x+s*3)},${f1(c.y-4.5)} Q${f1(c.x+s*6.2)},${f1(c.y)} ${f1(c.x+s*3)},${f1(c.y+4.5)}" stroke="${C}" stroke-width="1.15" fill="none" stroke-linecap="round" opacity="${f1(.9*c.a14*100)/100}"/>`);
+    if (c.a12>.15) o.push(`<path d="M${f1(c.x+s*2.5)},${f1(c.y-3)} Q${f1(c.x+s*4.5)},${f1(c.y+1)} ${f1(c.x+s*2)},${f1(c.y+4)}" stroke="${C}" stroke-width=".9" fill="none" opacity="${f1(.45*c.a12*100)/100}"/>`);
+  }
+  if (a15>.05) for (const s of [-1,1]){ const c=corner[s]; o.push(`<path d="M${f1(c.x+s*1)},${f1(c.y+2)} Q${f1(c.x+s*3.2)},${f1(c.y+8)} ${f1(c.x+s*1.5)},${f1(c.y+14)}" stroke="${C}" stroke-width="1" fill="none" opacity="${f1(.6*a15*100)/100}"/>`); }
+  if (a24>.05) o.push(`<path d="M88,${f1(ulTop-3.5)} Q100,${f1(ulTop-5)} 112,${f1(ulTop-3.5)}" stroke="${C}" stroke-width=".9" fill="none" opacity="${f1(.45*a24*100)/100}"/>`);
+  // chin
+  const mlY = llOut + 7;
+  o.push(`<path d="M90,${f1(mlY)} Q100,${f1(mlY-2-2.5*a17)} 110,${f1(mlY)}" stroke="${C}" stroke-width="1" fill="none" stroke-linecap="round" opacity="${f1(clamp(.22+.5*a17)*100)/100}"/>`);
+  if (a17>.08){ o.push(`<g fill="${C}" opacity="${f1(.55*a17*100)/100}">`); for (const [x,y] of [[95,-15],[100,-17],[105,-15],[97.5,-11],[102.5,-11],[100,-13]]) o.push(`<circle cx="${x}" cy="${f1(chinY+y)}" r=".9"/>`); o.push(`</g>`); }
+  // cheeks
+  const a6m = bothSides(au,'AU6');
+  for (const s of [-1,1]){
+    const c = corner[s];
+    o.push(`<path d="M${100+s*(fw-12)},128 Q${100+s*(fw-9)},146 ${100+s*(fw-16)},${f1(162-4*c.a12)}" stroke="${C}" stroke-width="1" fill="none" opacity="${f1(clamp(.08+.3*c.a12+.2*a6m)*100)/100}"/>`);
+  }
+  o.push(`</g>`); // end head clip
+
+  // front hair
+  if (A.style==='short'||A.style==='long'||A.style==='curly'||A.style==='bun') o.push(`<path d="${hairFront(fw, A.style==='bun'?54:58)}" fill="${A.hair}"/>`);
+  if (A.style==='buzz') o.push(`<path d="${hairFront(fw,52)}" fill="${A.hair}" opacity=".88"/>`);
+  if (A.style==='bald'){ for (const s of [-1,1]) o.push(`<path d="M${100+s*(fw+2)},112 C${100+s*(fw+4)},84 ${100+s*(fw-2)},70 ${100+s*(fw-10)},62 C${100+s*(fw-8)},76 ${100+s*(fw-4)},92 ${100+s*(fw-2)},112Z" fill="${A.hair}"/>`); }
+
+  // brows + eyes per side
+  for (const s of [-1,1]){
+    const side = s<0?'R':'L';
+    const a1=g(au,'AU1',side), a2=g(au,'AU2',side), a4=g(au,'AU4',side), a5=g(au,'AU5',side), a6=g(au,'AU6',side), a7=g(au,'AU7',side);
+    // brow
+    const iy = 94 - 13*a1 - 2*a2 + 7.5*a4 + 2.5*a9, my = 89 - 5*a1 - 7.5*a2 + 5.5*a4 + 1.5*a9 + .9*a6, oy = 93 - 1*a1 - 9*a2 + 3.5*a4 + 2*a6;
+    const ix = 100 + s*(10 - 3.6*a4 - 1*a9), mx = 100 + s*26, ox = 100 + s*42;
+    const qx = 2*mx - (ix+ox)/2, qy = 2*my - (iy+oy)/2;
+    const t=.32, px = (1-t)*(1-t)*ix + 2*(1-t)*t*qx + t*t*ox, py = (1-t)*(1-t)*iy + 2*(1-t)*t*qy + t*t*oy;
+    const qx2 = (ix+qx)/2 + 0, qy2 = (iy+qy)/2;
+    o.push(`<g stroke="${A.brow}" fill="none" stroke-linecap="round"><path d="M${f1(ix)},${f1(iy)} Q${f1(qx)},${f1(qy)} ${f1(ox)},${f1(oy)}" stroke-width="${A.bw}"/><path d="M${f1(ix)},${f1(iy)} Q${f1(qx2)},${f1(qy2)} ${f1(px)},${f1(py)}" stroke-width="${f1(A.bw+1.8)}"/></g>`);
+    // eye
+    const ex = 100 + s*A.eg, ey = 111;
+    const hw = 14.3 - 1.2*a7 - .8*a6;
+    const up = Math.max(1.4, 7.5 + 5.6*a5 - 2.8*a7 - 2.4*a6 - 1.6*a4*(1-a5) - 1.1*a9);
+    const lo = Math.max(.9, 4.9 - 2.4*a7 - 2.8*a6 + 1.3*a5 - 1.3*a9);
+    const inX = ex - s*hw, inY = ey + .8, outX = ex + s*hw, outY = ey - .9;
+    const upC = ey - up*1.333, loC = ey + lo*1.333;
+    const eye = `M${f1(inX)},${f1(inY)} C${f1(inX+s*hw*.55)},${f1(upC)} ${f1(outX-s*hw*.6)},${f1(upC)} ${f1(outX)},${f1(outY)} C${f1(outX-s*hw*.5)},${f1(loC)} ${f1(inX+s*hw*.6)},${f1(loC)} ${f1(inX)},${f1(inY)}Z`;
+    const crease = `M${f1(inX+s*2)},${f1(inY-2.5)} C${f1(inX+s*hw*.55)},${f1(ey-(up+4.6)*1.333)} ${f1(outX-s*hw*.6)},${f1(ey-(up+4.6)*1.333)} ${f1(outX+s*.5)},${f1(outY-2)}`;
+    o.push(`<path d="${crease}" stroke="${C}" stroke-width="1" fill="none" opacity="${f1(clamp(.5*(1-.7*a5)*(1-.4*a6))*100)/100}"/>`);
+    o.push(`<clipPath id="${id}e${s<0?'a':'b'}"><path d="${eye}"/></clipPath><path d="${eye}" fill="#F3EFE8"/>`);
+    o.push(`<g clip-path="url(#${id}e${s<0?'a':'b'})"><circle cx="${f1(ex)}" cy="${f1(ey+.2+gy)}" r="6.7" fill="${A.iris}"/><circle cx="${f1(ex)}" cy="${f1(ey+.2+gy)}" r="2.8" fill="#0A0807"/><circle cx="${f1(ex-2)}" cy="${f1(ey-1.9+gy)}" r="1.25" fill="#fff" opacity=".9"/><path d="M${f1(inX)},${f1(inY)} C${f1(inX+s*hw*.55)},${f1(upC)} ${f1(outX-s*hw*.6)},${f1(upC)} ${f1(outX)},${f1(outY)}" stroke="#000" stroke-opacity=".18" stroke-width="3.5" fill="none"/></g>`);
+    o.push(`<path d="M${f1(inX)},${f1(inY)} C${f1(inX+s*hw*.55)},${f1(upC)} ${f1(outX-s*hw*.6)},${f1(upC)} ${f1(outX)},${f1(outY)}" stroke="#17100D" stroke-width="2.1" fill="none" stroke-linecap="round"/>`);
+    o.push(`<path d="M${f1(outX)},${f1(outY)} C${f1(outX-s*hw*.5)},${f1(loC)} ${f1(inX+s*hw*.6)},${f1(loC)} ${f1(inX)},${f1(inY)}" stroke="${C}" stroke-width=".9" fill="none" opacity="${f1(clamp(.35+.35*a7)*100)/100}"/>`);
+    // AU6: bags + crow's feet; AU7: lower-lid bulge
+    const bagY = ey + lo + 4.5;
+    if (a6>.05 || a7>.2 || A.age) o.push(`<path d="M${f1(ex-s*hw*.75)},${f1(bagY-1)} Q${f1(ex)},${f1(bagY+3+1.5*a6)} ${f1(ex+s*hw*.85)},${f1(bagY-2.5)}" stroke="${C}" stroke-width="1" fill="none" opacity="${f1(clamp(.6*a6+.3*a7+(A.age?.25:0))*100)/100}"/>`);
+    if (a6>.05 || A.age){ const op=clamp(.8*a6+(A.age?.25:0)); o.push(`<g stroke="${C}" stroke-width="1" stroke-linecap="round" opacity="${f1(op*100)/100}">`); for (const ang of [-28,0,26]){ const r=ang*Math.PI/180; const x0=outX+s*2.5, y0=outY+1; o.push(`<path d="M${f1(x0)},${f1(y0)} L${f1(x0+s*7.5*Math.cos(r))},${f1(y0+7.5*Math.sin(r))}"/>`);} o.push(`</g>`); }
+  }
+
+  // highlight
+  if (opts.hl){
+    const Z = {brow:[100,89,50,15], eyes:[100,111,50,12], mid:[100,124,22,22], mouth:[100,174,34,17]};
+    for (const z of [].concat(opts.hl)){ const [x,y,rx,ry]=Z[z]; o.push(`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="none" stroke="#FFB21E" stroke-width="1.8" stroke-dasharray="4 3"/>`); }
+  }
+  if (opts.mask){
+    const y = 131;
+    if (opts.mask==='upper') o.push(`<rect x="0" y="${y}" width="200" height="${250-y}" fill="#0B0D12" opacity=".93"/><path d="M0,${y} H200" stroke="#FFB21E" stroke-width=".8" opacity=".6"/>`);
+    else o.push(`<rect x="0" y="0" width="200" height="${y}" fill="#0B0D12" opacity=".93"/><path d="M0,${y} H200" stroke="#FFB21E" stroke-width=".8" opacity=".6"/>`);
+  }
+  o.push(`</svg>`);
+  return o.join('');
+}
+
+// Build an AU object for an emotion at a given intensity, with optional jitter and region filter
+function auFor(emo, k=1, opt={}){
+  const t = TPL[emo]||{}, out={};
+  for (const [key,v] of Object.entries(t)){
+    const base = key.replace(/[LR]$/,'');
+    if (opt.region==='upper' && !UPPER_AUS.includes(base)) continue;
+    if (opt.region==='lower' && !LOWER_AUS.includes(base)) continue;
+    let val = v*k;
+    if (opt.jitter) val = clamp(val + (Math.random()-.5)*opt.jitter*2);
+    out[key]=val;
+  }
+  return out;
+}
+function lerpAU(a,b,t){ const keys=new Set([...Object.keys(a),...Object.keys(b)]); const o={}; for (const k of keys) o[k]=(a[k]||0)+((b[k]||0)-(a[k]||0))*t; return o; }
+const ease = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+
+// Animate a face element through keyframes [{t:ms, au}], resolves when done
+function animateFace(el, A, frames, opts={}){
+  return new Promise(res=>{
+    const total = frames[frames.length-1].t; let start=null;
+    function step(now){
+      if (start==null) start=now;
+      const e = now-start;
+      let i=0; while (i<frames.length-2 && e>frames[i+1].t) i++;
+      const f0=frames[i], f1_=frames[i+1];
+      const span = Math.max(1, f1_.t-f0.t), tt = clamp((e-f0.t)/span);
+      el.innerHTML = renderFace(lerpAU(f0.au,f1_.au, f0.snap? 1 : ease(tt)), A, opts);
+      if (e < total && !(opts.cancel && opts.cancel())) requestAnimationFrame(step); else { el.innerHTML = renderFace(frames[frames.length-1].au, A, opts); res(); }
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+// Similarity read-out for the lab
+const VKEYS = ['AU1','AU2','AU4','AU5','AU6','AU7','AU9','AU10','AU12L','AU12R','AU14L','AU14R','AU15','AU17','AU20','AU23','AU24','AU25','AU26'];
+const VW = {AU25:.45, AU26:.6, AU17:.7};
+function vec(au){ return VKEYS.map(k=>{ const m=k.match(/^(AU\d+)([LR])$/); const v = m? g(au,m[1],m[2]) : (au[k]||0); return v*(VW[k]||1); }); }
+function readAs(au){
+  const v = vec(au); const n = Math.hypot(...v);
+  const scores = {};
+  for (const e of EMO){ const t=vec(TPL[e]); const dot=v.reduce((s,x,i)=>s+x*t[i],0); const tn=Math.hypot(...t); scores[e] = n<1e-6?0:dot/(n*tn); }
+  // asymmetry bonus pushes contempt; symmetry penalises it
+  const asym = Math.abs(g(au,'AU12','L')-g(au,'AU12','R')) + Math.abs(g(au,'AU14','L')-g(au,'AU14','R'));
+  scores.contempt = scores.contempt*(.55+.9*clamp(asym));
+  scores.neutral = clamp(1 - n/1.2);
+  const ex = Object.fromEntries(Object.entries(scores).map(([k,s])=>[k,Math.exp(7*s)]));
+  const sum = Object.values(ex).reduce((a,b)=>a+b,0);
+  return Object.entries(ex).map(([k,s])=>[k,s/sum]).sort((a,b)=>b[1]-a[1]);
+}
+function formulaOf(au){
+  const parts=[];
+  for (const a of AU_INFO){
+    const num = a.k.slice(2);
+    if (a.lr){ const L=g(au,a.k,'L'), R=g(au,a.k,'R'); if (L>.12 && R>.12) parts.push(num); else if (R>.12) parts.push('R'+num); else if (L>.12) parts.push('L'+num); }
+    else if ((au[a.k]||0)>.12) parts.push(num);
+  }
+  return parts.length? 'AU '+parts.join(' + ') : 'NEUTRAL';
+}
+
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const shuffle = arr => { const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ===================== STORE (progress) =====================
+let onStore = ()=>{};
+const Store = {
+  d:null, ref:null, mode:'local', q:Promise.resolve(),
+  blank(){ return {v:1, updatedAt:0, totals:{}, conf:{}, sessions:[], fakes:{seen:0,correct:0}, mirror:[]}; },
+  loadLocal(){ try{ const s=localStorage.getItem('flicker.v1'); if(s){ const d=JSON.parse(s); if(d && d.v===1) return d; } }catch(e){} return null; },
+  saveLocal(){ try{ localStorage.setItem('flicker.v1', JSON.stringify(this.d)); }catch(e){} },
+  async init(){
+    this.d = this.loadLocal() || this.blank();
+    try{
+      const C = window.claude; if(!C || !C.use) return;
+      const [db,user] = await Promise.all([C.use('db'), C.use('user')]);
+      if(!db||!user) return;
+      const uid = await user.id(); if(!uid) return;
+      this.ref = db.doc('data/users/'+uid+'/progress');
+      const snap = await this.ref.get();
+      if (snap.exists){ const r = snap.data(); if ((r.updatedAt||0) >= (this.d.updatedAt||0)) this.d = Object.assign(this.blank(), JSON.parse(JSON.stringify(r))); else this.push(); }
+      else if (this.d.sessions.length || this.d.fakes.seen) this.push();
+      this.mode='cloud'; this.saveLocal(); onStore();
+    }catch(e){ this.ref=null; this.mode='local'; onStore(); }
+  },
+  push(){
+    if(!this.ref) return;
+    const body = JSON.parse(JSON.stringify(this.d));
+    this.q = this.q.then(()=>this.ref.set(body)).catch(e=>{ if(e && (e.code==='invalid_argument'||e.code==='revoked'||e.code==='not_granted')){ this.ref=null; this.mode='local'; onStore(); } });
+  },
+  commit(){ this.d.updatedAt=Date.now(); if(this.d.sessions.length>120) this.d.sessions=this.d.sessions.slice(-120); if(this.d.mirror.length>30) this.d.mirror=this.d.mirror.slice(-30); this.saveLocal(); this.push(); onStore(); },
+  reset(){ this.d=this.blank(); this.commit(); }
+};
+
+// ===================== ROUTER =====================
+const VIEWS=['primer','atlas','lab','train','fake','mirror','progress'];
+let current=null; const onEnter={}, onLeave={};
+function go(v){
+  if(!VIEWS.includes(v)) v='primer';
+  if (current && current!==v && onLeave[current]) onLeave[current]();
+  $$('[data-view]').forEach(s=>s.hidden = s.dataset.view!==v);
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected', String(t.dataset.go===v)));
+  const prev=current; current=v;
+  if (prev!==v) window.scrollTo(0,0);
+  if (onEnter[v]) onEnter[v]();
+}
+function nav(v){ try{ if(location.hash.slice(1)!==v) location.hash=v; else go(v); }catch(e){ go(v); } }
+$$('.tab').forEach(t=>t.addEventListener('click',()=>nav(t.dataset.go)));
+window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
+
+// ===================== PRIMER =====================
+function svgScale(){
+  const W=960,H=170,P=34, lo=Math.log(20), hi=Math.log(5000);
+  const x = ms => P + (Math.log(ms)-lo)/(hi-lo)*(W-2*P);
+  const o=[`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Log-scale duration axis from 20 ms to 5 s">`];
+  o.push(`<rect x="${x(40)}" y="54" width="${x(500)-x(40)}" height="30" rx="4" class="sv-flash"/>`);
+  o.push(`<rect x="${x(500)+2}" y="54" width="${x(4000)-x(500)-2}" height="30" rx="4" class="sv-vizw"/>`);
+  o.push(`<text x="${x(40)+10}" y="74" class="sv-t sv-onflash" font-weight="700">MICRO-EXPRESSION  40–500 ms</text>`);
+  o.push(`<text x="${x(500)+12}" y="74" class="sv-t sv-ink" font-weight="700">MACRO-EXPRESSION  0.5–4 s</text>`);
+  o.push(`<path d="M${x(100)},100 V108 H${x(400)} V100" class="sv-line2" fill="none"/><text x="${(x(100)+x(400))/2}" y="124" text-anchor="middle" class="sv-t sv-ink2">a blink, 100–400 ms</text>`);
+  o.push(`<line x1="${P}" y1="140" x2="${W-P}" y2="140" class="sv-line"/>`);
+  for (let k=1;k<=12;k++){ const xx=x(40*k); o.push(`<line x1="${xx}" y1="134" x2="${xx}" y2="140" class="sv-line2"/>`); }
+  for (const [ms,l] of [[40,'40 ms'],[100,'100'],[200,'200'],[500,'500'],[1000,'1 s'],[2000,'2 s'],[4000,'4 s']]){ const xx=x(ms); o.push(`<line x1="${xx}" y1="140" x2="${xx}" y2="148" class="sv-line"/><text x="${xx}" y="163" text-anchor="middle" class="sv-t sv-ink3 tnum">${l}</text>`); }
+  o.push(`<text x="${x(40)}" y="30" class="sv-t sv-ink2">↓ 1 frame at 25 fps</text><line x1="${x(40)}" y1="36" x2="${x(40)}" y2="52" class="sv-line"/>`);
+  o.push(`<text x="${W-P}" y="30" text-anchor="end" class="sv-t sv-ink3">small ticks = one film frame each</text>`);
+  o.push(`</svg>`);
+  $('#scaleBox').innerHTML = o.join('');
+}
+const hero = {timer:null, n:0, busy:false};
+async function heroFlash(){
+  if (hero.busy) return; hero.busy=true;
+  const A = ACTORS[hero.n % ACTORS.length], e = EMO[(hero.n*3+1) % EMO.length], D = [160,120,200,80][hero.n%4]; hero.n++;
+  const el=$('#heroFace');
+  el.innerHTML = renderFace({},A,{label:'Neutral face'});
+  $('#heroQ').innerHTML = 'Watch the face…';
+  await wait(900);
+  const ex = document.createElement('div'); ex.style.cssText='position:absolute;inset:14px 30px'; ex.innerHTML = renderFace(auFor(e),A); ex.hidden=true; $('#heroGate').appendChild(ex);
+  const shown = await flashEl(ex, D); ex.remove();
+  const secs = (performance.now()/1000)|0;
+  $('#heroTc').textContent = `${String((secs/60|0)%60).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}:${String(Math.round(performance.now()/40)%25).padStart(2,'0')}`;
+  $('#heroQ').innerHTML = 'Something flashed. Did you catch it?';
+  await wait(1300);
+  $('#heroQ').innerHTML = `It was <strong>${LBL[e]}</strong> · ${D} ms · ${Math.round(D/40)} frame${Math.round(D/40)>1?'s':''}`;
+  hero.busy=false;
+}
+function heroLoop(){ clearInterval(hero.timer); if (REDUCED) return; hero.timer = setInterval(()=>{ if(current==='primer' && document.visibilityState==='visible') heroFlash(); }, 5200); }
+onEnter.primer = ()=>{ heroLoop(); };
+onLeave.primer = ()=>{ clearInterval(hero.timer); };
+$('#heroBtn').addEventListener('click', heroFlash);
+
+function chords(){
+  $('#keys').innerHTML = AU_INFO.map(a=>`<div class="key" data-k="${a.k.slice(2)}"><span class="k">${a.k.slice(2)}</span><span class="n">${a.n}</span></div>`).join('');
+  $('#chordBtns').innerHTML = EMO.map(e=>`<button class="chip" data-e="${e}" aria-pressed="false">${LBL[e]}</button>`).join('');
+  $$('#chordBtns button').forEach(b=>b.addEventListener('click',()=>setChord(b.dataset.e)));
+  setChord('sadness');
+}
+function setChord(e){
+  $$('#chordBtns button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.e===e)));
+  const ks = CHORD[e].map(c=>c.replace('R',''));
+  $$('#keys .key').forEach(k=>k.classList.toggle('on', ks.includes(k.dataset.k)));
+  $('#chordFace').innerHTML = renderFace(auFor(e), ACTORS[EMO.indexOf(e)%ACTORS.length], {label:LBL[e]});
+  $('#chordFormula').textContent = `${LBL[e]} = AU ${CHORD[e].join(' + ')}`;
+  const names = CHORD[e].map(c=>{ const a=AU_BY['AU'+c.replace('R','')]; return `${c} ${a.n.toLowerCase()}`; }).join(' · ');
+  $('#chordText').innerHTML = `${esc(ATLAS[e].signal)}<br><span style="font-size:14px">${esc(names)}${e==='contempt'?' (one side only)':''}</span>`;
+}
+
+// ===================== ATLAS =====================
+let atlasActor = 'mix';
+function atlasActorFor(i){ return atlasActor==='mix' ? ACTORS[i%ACTORS.length] : ACT_BY[atlasActor]; }
+function atlas(){
+  $('#atlasActors').innerHTML = [`<button class="chip" data-a="mix" aria-pressed="${atlasActor==='mix'}">Mix</button>`].concat(ACTORS.map(a=>`<button class="chip" data-a="${a.id}" aria-pressed="${atlasActor===a.id}">${a.name}</button>`)).join('');
+  $$('#atlasActors button').forEach(b=>b.addEventListener('click',()=>{ atlasActor=b.dataset.a; atlas(); }));
+  $('#atlasGrid').innerHTML = ['neutral',...EMO].map((e,i)=>{
+    const d=ATLAS[e], ch=CHORD[e]||[];
+    return `<article class="card emo" data-e="${e}">
+      <div class="gate"><span class="hud tl">${ch.length?ch.map(c=>'AU'+c).join(' '):'BASELINE'}</span><div class="fx">${renderFace(auFor(e), atlasActorFor(i), {label:LBL[e]})}</div>${ch.length?`<button class="btn sm play" data-play="${e}">▶ Play onset</button>`:''}</div>
+      <div class="body">
+        <div class="row" style="justify-content:space-between"><h3>${LBL[e]}</h3></div>
+        <p class="sig">${esc(d.signal)}</p>
+        <div class="row" style="gap:6px">${ch.length?'':'<span class="au">no action units</span>'}${ch.map(c=>`<span class="au" title="${esc(AU_BY['AU'+c.replace('R','')].n)}">${c}</span>`).join('<span class="muted">+</span>')}</div>
+        <blockquote>${esc(d.analogy)}</blockquote>
+        <dl><dt>Brow</dt><dd>${esc(d.zones[0])}</dd><dt>Eyes</dt><dd>${esc(d.zones[1])}</dd><dt>Mouth</dt><dd>${esc(d.zones[2])}</dd></dl>
+        <p class="tell"><strong>Tell.</strong> ${esc(d.tell)}</p>
+        <div class="foot">${d.pair?`<span class="muted" style="font-size:14px">Mistaken for <strong style="color:var(--ink)">${LBL[d.pair]}</strong></span>`:'<span class="muted" style="font-size:14px">The reference point</span>'}<span class="row" style="gap:6px"><button class="btn sm ghost" data-lab="${e}">Open in Lab</button>${d.pair?`<button class="btn sm" data-drill="${e},${d.pair}">Drill pair</button>`:''}</span></div>
+      </div></article>`;
+  }).join('');
+  $$('#atlasGrid [data-play]').forEach(b=>b.addEventListener('click',()=>{
+    const e=b.dataset.play, i=EMO.indexOf(e)+1, el=b.closest('.emo').querySelector('.fx'), T=auFor(e);
+    animateFace(el, atlasActorFor(i), [{t:0,au:{}},{t:600,au:{}},{t:1100,au:T}], {label:LBL[e]});
+  }));
+  $$('#atlasGrid [data-lab]').forEach(b=>b.addEventListener('click',()=>{ labPreset(b.dataset.lab); nav('lab'); }));
+  $$('#atlasGrid [data-drill]').forEach(b=>b.addEventListener('click',()=>startDrill(b.dataset.drill.split(','))));
+  $('#pairGrid').innerHTML = PAIRS.map((p,i)=>{
+    const A = ACTORS[(i*2+1)%ACTORS.length];
+    return `<article class="card pair"><div class="duo">
+      <figure><div class="gate thin">${renderFace(auFor(p.a),A,{hl:p.zone,label:LBL[p.a]})}</div><figcaption>${LBL[p.a]}</figcaption></figure>
+      <figure><div class="gate thin">${renderFace(auFor(p.b),A,{hl:p.zone,label:LBL[p.b]})}</div><figcaption>${LBL[p.b]}</figcaption></figure></div>
+      <div class="stack" style="gap:10px"><h3>${LBL[p.a]} vs ${LBL[p.b]}</h3><p style="font-size:15px">${esc(p.key)}</p><div><button class="btn sm" data-drill="${p.a},${p.b}">Drill this pair</button></div></div></article>`;
+  }).join('');
+  $$('#pairGrid [data-drill]').forEach(b=>b.addEventListener('click',()=>startDrill(b.dataset.drill.split(','))));
+}
+
+// ===================== LAB =====================
+const lab = {au:{}, actor:ACTORS[1], oneSide:false};
+const LAB_GROUPS = [['Brow & forehead',['AU1','AU2','AU4']],['Eyes & cheeks',['AU5','AU6','AU7']],['Nose & upper lip',['AU9','AU10']],['Lip corners',['AU12','AU14','AU15','AU20']],['Lips & chin',['AU17','AU23','AU24']],['Opening',['AU25','AU26']]];
+function labVal(k){ const a=AU_BY[k]; return a.lr ? Math.max(g(lab.au,k,'L'), g(lab.au,k,'R')) : (lab.au[k]||0); }
+function labBuild(){
+  $('#labSliders').innerHTML = LAB_GROUPS.map(([t,ks])=>`<div class="sgroup"><h3>${t}</h3>${ks.map(k=>{ const a=AU_BY[k]; return `<div class="srow" data-k="${k}"><span class="code">${k.replace('AU','AU ')}</span><label class="nm" for="sl-${k}">${a.n}${a.lr?' <span class="chip" style="font-size:10px;padding:0 6px">L/R</span>':''}<span class="ms">${a.m}</span></label><input type="range" id="sl-${k}" min="0" max="100" step="1" value="0"><output for="sl-${k}">0</output></div>`; }).join('')}</div>`).join('');
+  $$('#labSliders input').forEach(inp=>inp.addEventListener('input',()=>{
+    const k=inp.closest('.srow').dataset.k, v=inp.value/100, a=AU_BY[k];
+    if (a.lr){ delete lab.au[k]; if (lab.oneSide){ lab.au[k+'R']=v; lab.au[k+'L']=0; } else { delete lab.au[k+'L']; delete lab.au[k+'R']; lab.au[k]=v; } }
+    else lab.au[k]=v;
+    inp.style.setProperty('--p', inp.value+'%');
+    labRender(false);
+  }));
+  $('#labPresets').insertAdjacentHTML('beforeend', ['neutral',...EMO].map(e=>`<button class="chip" data-p="${e}">${LBL[e]}</button>`).join(''));
+  $$('#labPresets [data-p]').forEach(b=>b.addEventListener('click',()=>labPreset(b.dataset.p)));
+  $('#labActors').innerHTML = ACTORS.map(a=>`<button class="chip" data-a="${a.id}" aria-pressed="${a===lab.actor}">${a.name}</button>`).join('');
+  $$('#labActors button').forEach(b=>b.addEventListener('click',()=>{ lab.actor=ACT_BY[b.dataset.a]; $$('#labActors button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); labRender(false); }));
+  $('#labReset').addEventListener('click',()=>labPreset('neutral'));
+  $('#labMirror').addEventListener('click',()=>{ lab.oneSide=!lab.oneSide; for (const k of ['AU12','AU14']){ const v=labVal(k); delete lab.au[k]; delete lab.au[k+'L']; delete lab.au[k+'R']; if(v>0){ if(lab.oneSide){lab.au[k+'R']=v; lab.au[k+'L']=0;} else lab.au[k]=v; } } labRender(true); });
+  $('#labFlash').addEventListener('click', labFlash);
+  labRender(true);
+}
+function labPreset(e){
+  lab.au = e==='neutral' ? {} : JSON.parse(JSON.stringify(TPL[e]));
+  delete lab.au.gazeY;
+  lab.oneSide = e==='contempt';
+  if (lab.oneSide){ for (const k of ['AU12','AU14']) if (lab.au[k+'R']!=null) lab.au[k+'L']=0; }
+  labRender(true);
+}
+function labRender(syncSliders){
+  $('#labFace').innerHTML = renderFace(lab.au, lab.actor, {label:'Face Lab face'});
+  $('#labFormula').textContent = formulaOf(lab.au);
+  $('#labMirror').textContent = lab.oneSide ? 'One side only (12, 14)' : 'Symmetry: both sides';
+  $('#labMirror').setAttribute('aria-pressed', String(lab.oneSide));
+  for (const row of $$('#labSliders .srow')){
+    const k=row.dataset.k, v=labVal(k);
+    if (syncSliders){ const inp=row.querySelector('input'); inp.value = Math.round(v*100); inp.style.setProperty('--p', inp.value+'%'); }
+    row.querySelector('output').textContent = Math.round(v*100);
+    row.classList.toggle('lit', v>.12);
+  }
+  const r = readAs(lab.au).slice(0,5);
+  $('#labTop').textContent = r[0][1] > .34 ? LBL[r[0][0]] : 'Mixed / unclear';
+  $('#labReads').innerHTML = r.map(([k,v],i)=>`<div class="rbar${i===0?' top':''}"><span>${LBL[k]}</span><span class="t"><i style="width:${Math.round(v*100)}%"></i></span><span class="v tnum">${Math.round(v*100)}%</span></div>`).join('');
+}
+async function labFlash(){
+  const btn=$('#labFlash'); btn.disabled=true;
+  const el=$('#labFace'), keep=el.innerHTML;
+  el.innerHTML = renderFace({}, lab.actor);
+  await wait(700);
+  const ex=document.createElement('div'); ex.style.cssText='position:absolute;inset:14px 30px'; ex.innerHTML=keep; ex.hidden=true; $('#labGate').appendChild(ex);
+  await flashEl(ex,120); ex.remove();
+  await wait(800); el.innerHTML=keep; btn.disabled=false;
+}
+
+// ===================== FLASH ENGINE =====================
+function flashEl(el, D){
+  return new Promise(res=>{
+    requestAnimationFrame(()=>{
+      el.hidden=false;
+      requestAnimationFrame(start=>{
+        const tick = t => { if (t - start >= D - 8){ el.hidden=true; requestAnimationFrame(t2=>res(Math.round(t2-start))); } else requestAnimationFrame(tick); };
+        requestAnimationFrame(tick);
+      });
+    });
+  });
+}
+
+// ===================== TRAINER =====================
+const LEVELS=[500,333,200,133,80,40];
+const T = {opts:{speed:'adaptive', region:'full', intensity:'full'}, drill:null, trials:[], i:0, phase:'idle', level:2, streak:0, token:0};
+function segBuild(id, key, items){
+  const el=$(id); el.innerHTML = items.map(([v,l])=>`<button data-v="${v}" aria-pressed="${String(T.opts[key])===String(v)}">${l}</button>`).join('');
+  $$('button',el).forEach(b=>b.addEventListener('click',()=>{ if (T.phase!=='idle' && T.phase!=='done') return; T.opts[key] = isNaN(+b.dataset.v)? b.dataset.v : +b.dataset.v; $$('button',el).forEach(x=>x.setAttribute('aria-pressed',String(x===b))); trainIdle(); }));
+}
+function pool(){ let p = T.drill ? T.drill.slice() : EMO.slice(); if (T.opts.region==='upper') p=p.filter(e=>e!=='contempt'); return p.length? p : EMO.filter(e=>e!=='contempt'); }
+function exposure(){ return T.opts.speed==='adaptive' ? LEVELS[T.level] : T.opts.speed; }
+function maskOpt(){ return T.opts.region==='full' ? null : T.opts.region; }
+function regionOpt(){ return T.opts.region==='full' ? undefined : T.opts.region; }
+function padRender(state={}){
+  const p=pool();
+  $('#pad').innerHTML = p.map((e,i)=>`<button data-e="${e}" ${state.enabled?'':'disabled'} class="${state.right===e?'right':state.wrong===e?'wrong':''}"><span>${LBL[e]}</span><span class="kbd">${i+1}</span></button>`).join('');
+  $$('#pad button').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.e)));
+}
+function ladderRender(){
+  const cur = T.opts.speed==='adaptive' ? T.level : LEVELS.indexOf(T.opts.speed);
+  $('#ladder').innerHTML = LEVELS.map((ms,i)=>`<i style="height:${30+i*14}%" class="${i<=cur?'on':''}" title="${ms} ms"></i>`).join('');
+  const D=exposure(); $('#ladderLbl').textContent = `${D} ms · ${Math.max(1,Math.round(D/40))} frame${Math.round(D/40)>1?'s':''}`;
+  $('#hudExp').innerHTML = `EXPOSURE <b>${D} ms</b>`;
+}
+function dotsRender(){
+  const n = T.trials.length || (T.drill?12:14);
+  $('#dots').innerHTML = Array.from({length:n},(_,i)=>{ const t=T.trials[i]; const c = t && t.guess ? (t.ok?'ok':'no') : (i===T.i && T.phase!=='idle' && T.phase!=='done' ? 'cur':''); return `<i class="${c}"></i>`; }).join('');
+  $('#hudTrial').textContent = `TRIAL ${Math.min(T.i+ (T.phase==='idle'?0:1), n)}/${n}`;
+}
+function drillNote(){
+  const el=$('#drillNote');
+  if (T.drill){ el.hidden=false; el.innerHTML = `<span>Pair drill: <strong>${LBL[T.drill[0]]} vs ${LBL[T.drill[1]]}</strong></span><button class="btn sm ghost" id="drillClear">Back to all seven</button>`; $('#drillClear').addEventListener('click',()=>{ T.drill=null; drillNote(); trainIdle(); }); }
+  else el.hidden=true;
+}
+function startDrill(pair){ T.drill = pair; T.phase='idle'; nav('train'); drillNote(); trainIdle(); }
+function trainIdle(){
+  T.token++; T.phase='idle'; T.trials=[]; T.i=0; T.level=2; T.streak=0;
+  const A = ACTORS[2];
+  $('#stN').innerHTML = renderFace({}, A, {mask:maskOpt(), label:'Neutral face'}); $('#stE').hidden=true;
+  $('#stageMsg span').textContent=''; $('#hudMeasured').innerHTML='&nbsp;'; $('#hudFace').innerHTML='&nbsp;';
+  $('#fb').innerHTML = `<div class="row" style="justify-content:center"><button class="btn flash" id="startBtn">Start session <span class="kbd">Space</span></button></div>`;
+  $('#startBtn').addEventListener('click', trainStart);
+  padRender(); ladderRender(); dotsRender(); drillNote();
+}
+function trainStart(){
+  T.token++; const n = T.drill?12:14, p=pool();
+  let list=[]; while(list.length<n) list=list.concat(shuffle(p));
+  list = shuffle(list.slice(0,n));
+  T.trials = list.map(e=>({emo:e, actor:pick(ACTORS), k: T.opts.intensity==='subtle' ? .4+Math.random()*.2 : .85+Math.random()*.15}));
+  T.i=0; T.level=2; T.streak=0; $('#sumBox').hidden=true; $('#sumBox').innerHTML='';
+  const st=$('#stage').getBoundingClientRect(); if (st.top<60 || st.bottom>innerHeight-120) $('#stage').scrollIntoView({behavior:REDUCED?'auto':'smooth', block:'start'});
+  runTrial();
+}
+async function runTrial(){
+  const tok=++T.token, tr=T.trials[T.i];
+  T.phase='ready'; padRender(); ladderRender(); dotsRender();
+  tr.au = auFor(tr.emo, tr.k, {jitter:.06, region:regionOpt()});
+  $('#stN').innerHTML = renderFace({}, tr.actor, {mask:maskOpt(), label:'Neutral face'});
+  $('#stE').innerHTML = renderFace(tr.au, tr.actor, {mask:maskOpt()}); $('#stE').hidden=true;
+  $('#hudFace').textContent = tr.actor.name.toUpperCase(); $('#hudMeasured').innerHTML = '<b>●</b> REC';
+  $('#fb').innerHTML = `<p class="muted" style="text-align:center">Eyes on the ${T.opts.region==='upper'?'brow and eyes':T.opts.region==='lower'?'mouth':'face'}…</p>`;
+  await wait(1100 + Math.random()*800);
+  if (tok!==T.token) return;
+  tr.D = exposure();
+  tr.shown = await flashEl($('#stE'), tr.D);
+  if (tok!==T.token) return;
+  T.phase='answer';
+  $('#hudMeasured').innerHTML = `SHOWN ≈ ${tr.shown} ms`;
+  padRender({enabled:true});
+  $('#fb').innerHTML = `<p style="text-align:center"><strong>What flashed?</strong> <span class="muted">Press 1–${pool().length} or tap.</span></p>`;
+}
+function answer(e){
+  if (T.phase!=='answer') return;
+  const tr=T.trials[T.i]; tr.guess=e; tr.ok = e===tr.emo;
+  if (T.opts.speed==='adaptive'){ if (tr.ok){ T.streak++; if (T.streak>=2){ T.level=Math.min(LEVELS.length-1,T.level+1); T.streak=0; } } else { T.level=Math.max(0,T.level-1); T.streak=0; } }
+  T.phase='feedback';
+  $('#stE').innerHTML = renderFace(tr.au, tr.actor, {mask:maskOpt(), hl:ATLAS[tr.emo].zone}); $('#stE').hidden=false;
+  padRender({right:tr.emo, wrong: tr.ok?null:e});
+  const tip = tr.ok ? ATLAS[tr.emo].tell : (tipFor(tr.emo,e) || ATLAS[tr.emo].tell);
+  $('#fb').innerHTML = `<div class="card stack" style="gap:10px">
+    <div class="row">${tr.ok?`<span class="pill ok">✓ Correct</span>`:`<span class="pill no">✕ It was ${LBL[tr.emo]}</span><span class="muted">You said ${LBL[e]}.</span>`}<span class="chip">${CHORD[tr.emo].map(c=>'AU'+c).join(' + ')}</span></div>
+    <p style="font-size:15px">${esc(tip)}</p>
+    <div class="row"><button class="btn sm" id="nextBtn">${T.i+1>=T.trials.length?'See results':'Next'} <span class="kbd">Space</span></button><button class="btn sm ghost" id="replayBtn">Replay flash <span class="kbd">R</span></button></div></div>`;
+  $('#nextBtn').addEventListener('click', nextTrial); $('#replayBtn').addEventListener('click', replay);
+  dotsRender(); ladderRender();
+}
+async function replay(){
+  if (T.phase!=='feedback') return;
+  const tok=T.token, tr=T.trials[T.i]; T.phase='replay';
+  $('#stE').hidden=true; await wait(500); if (tok!==T.token) return;
+  $('#stE').innerHTML = renderFace(tr.au, tr.actor, {mask:maskOpt()});
+  await flashEl($('#stE'), tr.D); await wait(600); if (tok!==T.token) return;
+  $('#stE').innerHTML = renderFace(tr.au, tr.actor, {mask:maskOpt(), hl:ATLAS[tr.emo].zone}); $('#stE').hidden=false; T.phase='feedback';
+}
+function nextTrial(){ if (T.phase!=='feedback') return; T.i++; if (T.i>=T.trials.length) trainFinish(); else runTrial(); }
+function sessionThreshold(trials){ const half = trials.slice(Math.floor(trials.length/2)); return Math.round(half.reduce((s,t)=>s+t.D,0)/half.length); }
+function trainFinish(){
+  T.phase='done'; T.token++;
+  const tr=T.trials, correct=tr.filter(t=>t.ok).length, acc=correct/tr.length;
+  const thr = T.opts.speed==='adaptive' ? sessionThreshold(tr) : T.opts.speed;
+  const d=Store.d;
+  for (const t of tr){ const s=d.totals[t.emo]||(d.totals[t.emo]={seen:0,correct:0}); s.seen++; if(t.ok) s.correct++; const row=d.conf[t.emo]||(d.conf[t.emo]={}); row[t.guess]=(row[t.guess]||0)+1; }
+  d.sessions.push({t:Date.now(), n:tr.length, correct, thr, speed:String(T.opts.speed), region:T.opts.region, intensity:T.opts.intensity, drill:T.drill?T.drill.join('-'):null});
+  Store.commit();
+  const misses = tr.filter(t=>!t.ok);
+  const pairs = {}; for (const m of misses){ const k=m.emo+'→'+m.guess; pairs[k]=(pairs[k]||0)+1; }
+  const top = Object.entries(pairs).sort((a,b)=>b[1]-a[1])[0];
+  $('#fb').innerHTML='';
+  const sb=$('#sumBox'); sb.hidden=false;
+  sb.innerHTML = `<div class="stack">
+    <div class="row" style="justify-content:space-between"><h3>Session complete</h3><span class="chip">${T.drill?`${LBL[T.drill[0]]} vs ${LBL[T.drill[1]]}`:'All seven'} · ${T.opts.region==='full'?'full face':T.opts.region==='upper'?'eyes only':'mouth only'} · ${T.opts.intensity}</span></div>
+    <div class="summary">
+      <div class="tile"><span class="big tnum">${Math.round(acc*100)}%</span><span class="lbl">${correct} of ${tr.length} correct</span></div>
+      <div class="tile"><span class="big tnum">${thr} ms</span><span class="lbl">${T.opts.speed==='adaptive'?'Threshold (2nd half average)':'Fixed exposure'}</span></div>
+      <div class="tile"><span class="big tnum">${Math.max(1,Math.round(thr/40))}</span><span class="lbl">film frame${Math.round(thr/40)>1?'s':''} at 25 fps</span></div>
+    </div>
+    ${top?`<div class="banner"><span>Most frequent miss: <strong>${LBL[top[0].split('→')[0]]}</strong> read as <strong>${LBL[top[0].split('→')[1]]}</strong> (${top[1]}×).</span><button class="btn sm" id="sumDrill">Drill this pair</button></div><p style="font-size:15px">${esc(tipFor(...top[0].split('→'))||ATLAS[top[0].split('→')[0]].tell)}</p>`:`<div class="banner">No misses. ${T.opts.speed==='adaptive'?'The ladder will start faster next time you push it.':'Try a faster fixed speed or adaptive mode.'}</div>`}
+    <div class="row"><button class="btn flash" id="sumAgain">Go again <span class="kbd">Space</span></button><a class="btn ghost" href="#progress">See progress</a></div></div>`;
+  $('#sumAgain').addEventListener('click', trainStart);
+  if (top) $('#sumDrill').addEventListener('click',()=>startDrill(top[0].split('→')));
+  padRender(); dotsRender();
+  sb.scrollIntoView({behavior: REDUCED?'auto':'smooth', block:'nearest'});
+}
+document.addEventListener('keydown', ev=>{
+  if (current!=='train' || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  const tag=(ev.target.tagName||'').toLowerCase();
+  if (tag==='input'||tag==='textarea') return;
+  if ((ev.key===' '||ev.key==='Enter') && tag==='button') return;
+  if (/^[1-7]$/.test(ev.key)){ const p=pool(); const e=p[+ev.key-1]; if(e && T.phase==='answer'){ ev.preventDefault(); answer(e);} return; }
+  if (ev.key===' '||ev.key==='Enter'){ if (T.phase==='idle'||T.phase==='done'){ ev.preventDefault(); trainStart(); } else if (T.phase==='feedback'){ ev.preventDefault(); nextTrial(); } return; }
+  if (ev.key==='r'||ev.key==='R'){ if (T.phase==='feedback'){ ev.preventDefault(); replay(); } }
+});
+onLeave.train = ()=>{ if (T.phase!=='idle' && T.phase!=='done'){ trainIdle(); } };
+// ===================== SPOT THE FAKE =====================
+const FAKES = [
+  {title:'Which smile is felt?', prompt:'Both mouths smile by the same amount. Look above the mouth.',
+   real:{AU6:.9,AU12:1,AU25:.5}, posed:{AU12:1,AU25:.5}, zone:'eyes',
+   lesson:'The felt smile recruits AU 6, the ring of muscle around the eye: crow\'s feet, lifted lower lids, and brow ends that dip slightly. The posed one is AU 12 alone. Caveat: some people can fire AU 6 on purpose, and a very broad smile pushes the cheeks up by itself, so look for the brow dip as well.'},
+  {title:'Which sadness is felt?', prompt:'Both mouths turn down. One brow is doing something most people can\'t do on command.',
+   real:{AU1:1,AU4:.6,AU15:.8,AU17:.45,gazeY:.6}, posed:{AU4:.45,AU15:.85,AU17:.5}, zone:'brow',
+   lesson:'Felt sadness pulls the inner corners of the brows up and together (AU 1+4), the grief muscles. Most people can\'t produce that on purpose, so a frown without it is usually a performance.'},
+  {title:'Which fear is felt?', prompt:'Both faces have raised brows and wide eyes.',
+   real:TPL.fear, posed:{AU1:.9,AU2:.9,AU5:.9,AU25:.6,AU26:.55}, zone:['brow','mouth'],
+   lesson:'Posed fear usually borrows surprise\'s curved, raised brows. Felt fear adds AU 4, which pulls the raised brows into a flat line, and AU 20, which stretches the lips sideways. Both are hard to fake.'},
+  {title:'Which anger is felt?', prompt:'Both are glaring. Check the lips.',
+   real:TPL.anger, posed:{AU4:1,AU5:.6,AU7:.7}, zone:'mouth',
+   lesson:'Felt anger narrows the red of the lips (AU 23) and often presses them together (AU 24). People acting angry tend to work the brows and leave the mouth soft.'},
+  {title:'Which surprise is felt?', prompt:'Felt expressions are usually symmetric. Contempt is the only exception.',
+   real:TPL.surprise, posed:{AU1:.7,AU2L:1,AU2R:.2,AU5:.7,AU25:.5,AU26:.55}, zone:'brow',
+   lesson:'Deliberate expressions often come out lopsided. One brow cocked higher than the other is a classic sign the expression is being produced rather than felt.'},
+  {title:'Which smile is felt?', prompt:'Both faces end up identical. Play the onsets and watch how each smile arrives and leaves.', timing:true,
+   real:{AU6:.85,AU12:1,AU25:.5}, posed:{AU6:.85,AU12:1,AU25:.5}, zone:'mouth',
+   lesson:'Felt expressions rise smoothly over about half a second and fade gradually. Posed ones snap on like a light switch, get held too long, and snap off. A smile frozen for several seconds is almost always social.'},
+];
+const F = {i:0, score:0, picks:[], realSide:'A', actor:null, done:false, playing:false};
+function fakeStart(){ F.i=0; F.score=0; F.picks=[]; F.done=false; fakeRound(); }
+function fakeFaces(state){
+  const r=FAKES[F.i], hl = state==='reveal' ? r.zone : null;
+  const auA = F.realSide==='A' ? r.real : r.posed, auB = F.realSide==='A' ? r.posed : r.real;
+  const rest = r.timing && state!=='reveal';
+  $('#fkA').innerHTML = renderFace(rest?{}:auA, F.actor, {hl, label:'Face A'});
+  $('#fkB').innerHTML = renderFace(rest?{}:auB, F.actor, {hl, label:'Face B'});
+}
+function fakeRound(){
+  const r=FAKES[F.i]; F.realSide = Math.random()<.5?'A':'B'; F.actor = ACTORS[(F.i*2+3)%ACTORS.length];
+  $('#fkRound').textContent = `Round ${F.i+1} of ${FAKES.length}`;
+  $('#fkDots').innerHTML = FAKES.map((_,i)=>`<i class="${F.picks[i]==null?(i===F.i?'cur':''):(F.picks[i]?'ok':'no')}"></i>`).join('');
+  $('#fkTitle').textContent = r.title; $('#fkPrompt').textContent = r.prompt;
+  $('#fkVs').innerHTML = ['A','B'].map(s=>`<figure><div class="gate" id="fk${s}"></div><button class="btn ghost choice" data-s="${s}">${s} is felt</button></figure>`).join('');
+  fakeFaces('ask');
+  $$('#fkVs .choice').forEach(b=>b.addEventListener('click',()=>fakePick(b.dataset.s)));
+  $('#fkPlayHint').textContent = r.timing ? 'Required for this round: watch both together.' : 'Optional: watch both expressions arrive.';
+  $('#fkPlay').disabled=false; $('#fkPlayRow').hidden=false;
+  $('#fkFb').innerHTML='';
+}
+async function fakePlay(){
+  if (F.playing || F.done) return; F.playing=true; $('#fkPlay').disabled=true;
+  const r=FAKES[F.i], auA = F.realSide==='A'?r.real:r.posed, auB = F.realSide==='A'?r.posed:r.real;
+  const realT = r.timing ? [{t:0,au:{}},{t:300,au:{}},{t:850,au:null},{t:2150,au:null},{t:3050,au:{}}] : [{t:0,au:{}},{t:300,au:{}},{t:800,au:null}];
+  const posedT = r.timing ? [{t:0,au:{}},{t:300,au:{},snap:true},{t:370,au:null},{t:2950,au:null,snap:true},{t:3020,au:{}}] : realT;
+  const fill = (fr,au)=>fr.map(f=>({...f, au: f.au===null? au : f.au}));
+  const isRealA = F.realSide==='A';
+  await Promise.all([
+    animateFace($('#fkA'), F.actor, fill(isRealA?realT:posedT, auA), {label:'Face A'}),
+    animateFace($('#fkB'), F.actor, fill(isRealA?posedT:realT, auB), {label:'Face B'}),
+  ]);
+  F.playing=false; if(!F.done) $('#fkPlay').disabled=false;
+  if (!r.timing) fakeFaces('ask');
+}
+function fakePick(s){
+  if (F.picks[F.i]!=null || F.playing) return;
+  const r=FAKES[F.i], ok = s===F.realSide; F.picks[F.i]=ok; if (ok) F.score++;
+  $$('#fkVs .choice').forEach(b=>{ b.disabled=true; if (b.dataset.s===F.realSide) b.classList.add('right'); else if (b.dataset.s===s) b.classList.add('wrong'); b.textContent = b.dataset.s===F.realSide ? `${b.dataset.s} · felt` : `${b.dataset.s} · posed`; });
+  if (!r.timing) fakeFaces('reveal');
+  const last = F.i>=FAKES.length-1;
+  $('#fkFb').innerHTML = `<div class="card stack" style="gap:10px"><div class="row">${ok?'<span class="pill ok">✓ Right</span>':'<span class="pill no">✕ Not quite</span>'}<span class="muted">Face ${F.realSide} was felt.</span></div><p style="font-size:15px">${esc(r.lesson)}</p><div class="row"><button class="btn sm" id="fkNext">${last?'Finish':'Next round'}</button></div></div>`;
+  $('#fkNext').addEventListener('click',()=>{ if (last) fakeEnd(); else { F.i++; fakeRound(); } });
+  $('#fkDots').innerHTML = FAKES.map((_,i)=>`<i class="${F.picks[i]==null?(i===F.i?'cur':''):(F.picks[i]?'ok':'no')}"></i>`).join('');
+}
+function fakeEnd(){
+  F.done=true;
+  Store.d.fakes.seen += FAKES.length; Store.d.fakes.correct += F.score; Store.commit();
+  $('#fkPlayRow').hidden=true;
+  $('#fkTitle').textContent = `${F.score} of ${FAKES.length} spotted`;
+  $('#fkPrompt').textContent = F.score>=5 ? 'Sharp eye. The reliable muscles are doing their job for you.' : 'Re-read the lessons below, then run it again. Each round tests a different reliable cue.';
+  $('#fkVs').innerHTML='';
+  $('#fkFb').innerHTML = `<div class="stack" style="gap:12px">${FAKES.map((r,i)=>`<div class="row" style="align-items:flex-start;flex-wrap:nowrap"><span class="pill ${F.picks[i]?'ok':'no'}">${F.picks[i]?'✓':'✕'}</span><p style="font-size:14.5px"><strong>${esc(r.title.replace('Which ','').replace(' is felt?',''))}:</strong> ${esc(r.lesson.split('. ')[0])}.</p></div>`).join('')}<div class="row"><button class="btn flash" id="fkAgain">Play again</button></div></div>`;
+  $('#fkAgain').addEventListener('click', fakeStart);
+}
+$('#fkPlay').addEventListener('click', fakePlay);
+
+// ===================== MIRROR =====================
+const HOW = {AU1:'Lift only the inner ends of your brows', AU2:'Lift the outer ends of your brows', AU4:'Pull your brows down and together', AU5:'Open your eyes wide, white showing above the iris', AU6:'Lift your cheeks so your lower lids push up', AU7:'Tense your lower eyelids', AU9:'Wrinkle your nose', AU10:'Raise your upper lip', AU12:'Pull your lip corners up and back', AU14:'Tighten one lip corner into a dimple', AU15:'Pull your lip corners straight down', AU17:'Push your chin up', AU20:'Stretch your lips sideways toward your ears', AU23:'Narrow your lips into a thin line', AU24:'Press your lips together', AU25:'Let your lips part', AU26:'Let your jaw drop'};
+const MR = {emo:'sadness', file:null, url:null, ctl:null};
+let SAMPLE=null, SAMPLE_IMG=false, SAMPLE_CHECKED=false;
+function mirrorBuild(){
+  $('#mrTargets').innerHTML = EMO.map(e=>`<button class="chip" data-e="${e}" aria-pressed="${e===MR.emo}">${LBL[e]}</button>`).join('');
+  $$('#mrTargets button').forEach(b=>b.addEventListener('click',()=>{ MR.emo=b.dataset.e; $$('#mrTargets button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); mirrorTarget(); $('#mrResult').innerHTML=''; }));
+  mirrorTarget();
+  const inp=$('#mrFile'), drop=$('#mrDrop');
+  inp.addEventListener('change',()=>{ if (inp.files && inp.files[0]) mirrorSetFile(inp.files[0]); inp.value=''; });
+  drop.addEventListener('dragover',e=>{ e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+  drop.addEventListener('drop',e=>{ e.preventDefault(); drop.classList.remove('over'); const f=e.dataTransfer.files && e.dataTransfer.files[0]; if (f) mirrorSetFile(f); });
+  $('#mrGrade').addEventListener('click', mirrorGrade);
+}
+function mirrorTarget(){
+  $('#mrFace').innerHTML = renderFace(auFor(MR.emo), ACTORS[EMO.indexOf(MR.emo)%ACTORS.length], {label:'Target '+LBL[MR.emo]});
+  $('#mrName').textContent = LBL[MR.emo];
+  $('#mrRecipe').innerHTML = CHORD[MR.emo].map((c,i)=>{ const k='AU'+c.replace('R',''); return `<li><input type="checkbox" id="rc-${i}"><span class="au">${c}</span><label for="rc-${i}">${HOW[k]}${c.startsWith('R')?' (one side only)':''}</label></li>`; }).join('');
+}
+function mirrorSetFile(f){
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(f.type)){ $('#mrStatus').textContent='Use a JPEG, PNG or WebP photo.'; return; }
+  MR.file=f; if (MR.url) URL.revokeObjectURL(MR.url); MR.url=URL.createObjectURL(f);
+  $('#mrShot').innerHTML = `<img src="${MR.url}" alt="Your photo">`;
+  $('#mrResult').innerHTML=''; mirrorCaps();
+}
+function mirrorCaps(){
+  const btn=$('#mrGrade');
+  if (!SAMPLE_CHECKED){ btn.disabled=true; $('#mrStatus').textContent = MR.file?'Connecting to Claude…':''; return; }
+  if (!SAMPLE || !SAMPLE_IMG){ btn.hidden=true; $('#mrStatus').textContent = 'Photo grading needs Claude, which isn\'t available in this view. Compare your photo with the target, recipe line by line.'; return; }
+  btn.hidden=false; btn.disabled=!MR.file; $('#mrStatus').textContent = MR.file? '' : 'Add a photo to grade it.';
+}
+async function mirrorGrade(){
+  if (!SAMPLE || !MR.file) return;
+  const btn=$('#mrGrade'); btn.disabled=true; $('#mrStatus').textContent='Claude is looking at the photo… (this can take up to a minute)';
+  $('#mrResult').innerHTML='';
+  const chord = CHORD[MR.emo].map(c=>{ const k='AU'+c.replace('R',''); return `${c.startsWith('R')?'Unilateral ':''}${k} (${AU_BY[k].n})`; }).join(', ');
+  const prompt = `You are a FACS-trained facial expression coach. The image is a photo the user took of their own face while trying to produce the expression "${LBL[MR.emo]}". The target action units are: ${chord}.
+Judge only visible facial muscle movement. Do not identify the person and do not comment on appearance, age, attractiveness or identity. Be honest and specific; no flattery. If no face is clearly visible, set face_found to false.
+Reply with only a JSON object of this shape:
+{"face_found": true, "read_as": "one of: happiness, sadness, surprise, fear, anger, disgust, contempt, neutral", "match": 0-100 (how well the face matches the target expression), "aus": [{"code": "AU1", "seen": true, "note": "under 12 words"}] (one entry per target action unit, in the order given), "nailed": "one short sentence on what works", "fix": "one short sentence with a concrete physical instruction for the weakest action unit"}`;
+  try{
+    const r = await SAMPLE.json(prompt, {images:[MR.file], modelTier:'default'});
+    if (!r || r.face_found===false){ $('#mrResult').innerHTML = `<div class="banner">No clear face found. Try again with your whole face in frame and even light.</div>`; }
+    else {
+      const match = Math.max(0,Math.min(100, Math.round(+r.match||0)));
+      const aus = Array.isArray(r.aus)? r.aus : [];
+      $('#mrResult').innerHTML = `<div class="card stack" style="gap:14px">
+        <div class="row" style="gap:18px;align-items:flex-end"><span class="ring tnum">${match}</span><div class="stack" style="gap:2px"><span class="eyebrow">Match to ${LBL[MR.emo]}</span><span>Reads as <strong>${esc(LBL[String(r.read_as||'').toLowerCase()]||r.read_as||'unclear')}</strong></span></div></div>
+        <ul class="checklist">${aus.map(a=>`<li><span class="mk ${a.seen?'y':'n'}">${a.seen?'✓':'✕'}</span><span class="au">${esc(String(a.code||'').replace(/^AU/,''))}</span><span>${esc(a.note||'')}</span></li>`).join('')}</ul>
+        ${r.nailed?`<p><strong>Working:</strong> ${esc(r.nailed)}</p>`:''}${r.fix?`<p class="callout"><strong>Next try:</strong> ${esc(r.fix)}</p>`:''}</div>`;
+      Store.d.mirror.push({t:Date.now(), emo:MR.emo, match}); Store.commit();
+    }
+    $('#mrStatus').textContent='';
+  }catch(e){
+    const code = e && e.code;
+    const msg = {not_granted:'Claude access was declined for this page, so grading is off for this visit.', rate_limited:'Too many requests right now. Try again in a minute.', image_rejected:'That image couldn\'t be read. Try a different photo.', refused:'Claude couldn\'t grade that photo. Try another one of just your face.', invalid_json:'The answer came back garbled. Try again.', session_expired:'Sign in again to use grading.'}[code] || 'Something went wrong reaching Claude. Try again.';
+    $('#mrStatus').textContent = msg;
+    if (code==='not_granted'||code==='sampling_disabled'||code==='images_unavailable'){ SAMPLE=null; }
+  }
+  btn.disabled = !SAMPLE || !MR.file;
+}
+
+// ===================== PROGRESS =====================
+function exampleData(){
+  const d = Store.blank(); let seed=7; const rnd=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
+  const thr=[333,290,250,233,200,190,166,150,140,133]; const now=Date.now();
+  thr.forEach((v,i)=>d.sessions.push({t:now-(thr.length-i)*86400000, n:14, correct:8+Math.round(i*.5+rnd()*2), thr:v, speed:'adaptive'}));
+  const base={happiness:.95,surprise:.85,anger:.78,sadness:.7,disgust:.66,fear:.52,contempt:.6};
+  for (const e of EMO){ const seen=20; const c=Math.round(seen*base[e]); d.totals[e]={seen,correct:c}; d.conf[e]={[e]:c}; }
+  d.conf.fear.surprise=6; d.conf.fear.sadness=3; d.conf.contempt.happiness=5; d.conf.contempt.disgust=3; d.conf.disgust.anger=5; d.conf.disgust.sadness=2; d.conf.sadness.fear=4; d.conf.sadness.disgust=2; d.conf.anger.disgust=4; d.conf.anger.contempt=0; d.conf.surprise.fear=3; d.conf.happiness.contempt=1; d.conf.anger.sadness=1;
+  d.fakes={seen:12,correct:9}; return d;
+}
+function dayStreak(sessions){
+  const days = new Set(sessions.map(s=>new Date(s.t).toDateString())); let n=0; const d=new Date();
+  if (!days.has(d.toDateString())) d.setDate(d.getDate()-1);
+  while (days.has(d.toDateString())){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+let pgConfirm=false;
+function progress(){
+  const real = Store.d.sessions.length>0 || Store.d.fakes.seen>0;
+  const d = real ? Store.d : exampleData();
+  $('#syncLbl').textContent = Store.mode==='cloud' ? 'Synced to your Claude account' : 'Saved in this browser only';
+  const bn=$('#pgBanner');
+  if (!real){ bn.hidden=false; bn.innerHTML = `<span><strong>Example data.</strong> Finish one Flash session and your own numbers replace it.</span><a class="btn sm" href="#train">Start a session</a>`; } else bn.hidden=true;
+  // tiles
+  const tot = Object.values(d.totals).reduce((a,s)=>({seen:a.seen+s.seen, correct:a.correct+s.correct}),{seen:0,correct:0});
+  const ad = d.sessions.filter(s=>s.speed==='adaptive' && s.thr);
+  const best = ad.length ? Math.min(...ad.map(s=>s.thr)) : null;
+  const tiles = [
+    [d.sessions.length, 'Flash sessions'],
+    [tot.seen? Math.round(tot.correct/tot.seen*100)+'%' : '—', `Accuracy · ${tot.correct}/${tot.seen}`],
+    [best? best+' ms' : '—', best? `Best threshold · ${Math.max(1,Math.round(best/40))} frames` : 'Best threshold (adaptive)'],
+    [dayStreak(d.sessions), 'Day streak'],
+    [d.fakes.seen? Math.round(d.fakes.correct/d.fakes.seen*100)+'%' : '—', `Spot the Fake · ${d.fakes.correct}/${d.fakes.seen}`],
+  ];
+  $('#pgTiles').innerHTML = tiles.map(([v,l])=>`<div class="tile"><span class="big tnum">${v}</span><span class="lbl">${l}</span></div>`).join('');
+  lineChart(ad);
+  // bars
+  $('#pgBars').innerHTML = EMO.map(e=>{ const s=d.totals[e]||{seen:0,correct:0}; const p=s.seen? s.correct/s.seen : 0; return `<div class="ebar"><span>${LBL[e]}</span><span class="t">${s.seen?`<i style="width:${Math.max(1.5,p*100)}%"></i>`:''}</span><span class="v tnum">${s.seen?Math.round(p*100)+'% · '+s.correct+'/'+s.seen:'—'}</span></div>`; }).join('');
+  // matrix
+  let worst=null;
+  const rows = EMO.map(r=>{ const row=d.conf[r]||{}; const n=Object.values(row).reduce((a,b)=>a+b,0);
+    const cells = EMO.map(c=>{ const v=row[c]||0, p=n? v/n : 0; if (r!==c && v>=2 && (!worst || v>worst.v)) worst={r,c,v,n};
+      const bg = v? `background:color-mix(in srgb, var(--viz) ${Math.round(12+p*80)}%, var(--panel))` : 'background:var(--paper)';
+      const fg = p>.5? 'color:var(--panel)' : 'color:var(--ink)';
+      return `<td class="${r===c?'dg':''}" style="${bg};${fg}" data-tip="${LBL[r]} shown → answered ${LBL[c]}: ${v} of ${n}${n?' ('+Math.round(p*100)+'%)':''}">${v||''}</td>`; }).join('');
+    return `<tr><th class="rh" scope="row">${LBL[r]}</th>${cells}</tr>`; }).join('');
+  $('#pgMx').innerHTML = `<table class="mx"><thead><tr><th></th>${EMO.map(c=>`<th scope="col">${LBL[c].slice(0,4)}.</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table><div class="tip" hidden></div>`;
+  const tip=$('#pgMx .tip');
+  $$('#pgMx td').forEach(td=>{ td.addEventListener('mouseenter',()=>{ const b=td.getBoundingClientRect(), p=$('#pgMx').getBoundingClientRect(); tip.textContent=td.dataset.tip; tip.style.left=(b.left-p.left+b.width/2+$('#pgMx').scrollLeft)+'px'; tip.style.top=(b.top-p.top)+'px'; tip.hidden=false; }); td.addEventListener('mouseleave',()=>tip.hidden=true); });
+  $('#pgSpot').innerHTML = worst ? `<div class="banner"><span>Blind spot: <strong>${LBL[worst.r]}</strong> read as <strong>${LBL[worst.c]}</strong> ${worst.v} times out of ${worst.n}.</span><button class="btn sm" id="pgDrill">Drill ${LBL[worst.r]} vs ${LBL[worst.c]}</button></div>` : '';
+  if (worst) $('#pgDrill').addEventListener('click',()=>startDrill([worst.r,worst.c]));
+  // reset
+  const rs=$('#pgReset');
+  if (!real){ rs.innerHTML=''; return; }
+  rs.innerHTML = pgConfirm ? `<span>Erase all progress for good?</span><button class="btn sm" id="pgYes" style="background:var(--bad);border-color:var(--bad)">Erase progress</button><button class="btn sm ghost" id="pgNo">Keep it</button>` : `<button class="btn sm ghost" id="pgAsk">Reset progress</button>`;
+  if (pgConfirm){ $('#pgYes').addEventListener('click',()=>{ pgConfirm=false; Store.reset(); }); $('#pgNo').addEventListener('click',()=>{ pgConfirm=false; progress(); }); }
+  else $('#pgAsk').addEventListener('click',()=>{ pgConfirm=true; progress(); });
+}
+function lineChart(ad){
+  const box=$('#pgLine');
+  if (!ad.length){ box.innerHTML = `<p class="muted" style="padding:30px 0;text-align:center">No adaptive sessions yet.</p>`; return; }
+  const W=520,H=210,L=46,R=16,Tp=24,B=30;
+  const ticks=[40,80,133,200,333,500];
+  const lo=Math.log(30), hi=Math.log(560);
+  const y = ms => Tp + (Math.log(ms)-lo)/(hi-lo)*(H-Tp-B);   // fast at top
+  const n=ad.length, x = i => n===1 ? (L+W-R)/2 : L + i*(W-L-R)/(n-1);
+  const pts = ad.map((s,i)=>[x(i), y(s.thr)]);
+  const o=[`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Threshold per adaptive session, faster is higher">`];
+  for (const t of ticks){ o.push(`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" class="sv-grid"/><text x="${L-8}" y="${y(t)+4}" text-anchor="end" class="sv-t sv-ink3 tnum">${t}</text>`); }
+  o.push(`<text x="${L-8}" y="10" text-anchor="end" class="sv-t sv-ink3">ms</text><text x="${W-R}" y="${H-6}" text-anchor="end" class="sv-t sv-ink3">sessions →</text><text x="${L}" y="${H-6}" class="sv-t sv-ink3">↑ faster</text>`);
+  if (n>1){ o.push(`<path d="M${pts[0][0]},${H-B} L${pts.map(p=>p.join(',')).join(' L')} L${pts[n-1][0]},${H-B}Z" class="sv-area"/>`); o.push(`<path d="M${pts.map(p=>p.join(',')).join(' L')}" class="sv-linev" fill="none"/>`); }
+  pts.forEach((p,i)=>{ const last=i===n-1; o.push(`<circle cx="${p[0]}" cy="${p[1]}" r="${last?5.5:4}" class="${last?'sv-dotlast':'sv-dot'}"/>`); });
+  const lp=pts[n-1]; o.push(`<text x="${Math.min(lp[0], W-R-4)}" y="${lp[1]-12}" text-anchor="${n===1?'middle':'end'}" class="sv-t sv-ink" font-weight="700">${ad[n-1].thr} ms</text>`);
+  const hw = n>1 ? (W-L-R)/(n-1)/2 : 40;
+  pts.forEach((p,i)=>o.push(`<rect x="${p[0]-hw}" y="${Tp}" width="${hw*2}" height="${H-Tp-B}" fill="transparent" data-i="${i}"/>`));
+  o.push(`</svg><div class="tip" hidden></div>`);
+  box.innerHTML=o.join('');
+  const tip=$('.tip',box), svg=$('svg',box);
+  $$('rect[data-i]',box).forEach(r=>{ r.addEventListener('mouseenter',()=>{ const i=+r.dataset.i, s=ad[i], sc=svg.getBoundingClientRect().width/W; tip.innerHTML=`${new Date(s.t).toLocaleDateString(undefined,{month:'short',day:'numeric'})} · <strong>${s.thr} ms</strong><br>${s.correct}/${s.n} correct`; tip.style.left=(pts[i][0]*sc)+'px'; tip.style.top=(pts[i][1]*sc)+'px'; tip.hidden=false; }); r.addEventListener('mouseleave',()=>tip.hidden=true); });
+}
+onEnter.progress = progress;
+onStore = ()=>{ if (current==='progress') progress(); else $('#syncLbl').textContent = Store.mode==='cloud' ? 'Synced to your Claude account' : 'Saved in this browser only'; };
+
+// ===================== INIT =====================
+function init(){
+  svgScale(); chords();
+  $('#zoneFace').innerHTML = renderFace(auFor('surprise',.55), ACTORS[4], {hl:['brow','eyes','mouth'], label:'Face with three zones marked'});
+  $('#heroFace').innerHTML = renderFace({}, ACTORS[0], {label:'Neutral face'});
+  atlas(); labBuild(); mirrorBuild();
+  segBuild('#optSpeed','speed',[['adaptive','Adaptive'],[500,'500'],[200,'200'],[80,'80'],[40,'40']]);
+  segBuild('#optRegion','region',[['full','Full face'],['upper','Eyes only'],['lower','Mouth only']]);
+  segBuild('#optIntensity','intensity',[['full','Full'],['subtle','Subtle']]);
+  trainIdle(); fakeStart();
+  go((location.hash||'#primer').slice(1));
+  if (!REDUCED) setTimeout(()=>{ if(current==='primer') heroFlash(); }, 1200);
+  Store.init().then(()=>onStore());
+  (async()=>{ try{ if (window.claude && window.claude.use){ SAMPLE = await window.claude.use('sample'); if (SAMPLE){ const lim = await SAMPLE.limits().catch(()=>null); SAMPLE_IMG = !!(lim && lim.images); } } }catch(e){ SAMPLE=null; } SAMPLE_CHECKED=true; mirrorCaps(); })();
+}
+Store.d = Store.loadLocal() || Store.blank();
+init();
+</script>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solve a Rubik's Cube — visual guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --panel: #f5f2ec;
+    --ink: #1a1a1a;
+    --muted: #6b6b68;
+    --line: #dcd9d1;
+    --W: #ffffff;
+    --Y: #ffd60a;
+    --R: #d62828;
+    --O: #ee7a2b;
+    --G: #2ea44f;
+    --B: #1e6feb;
+    --unknown: #b8b3a8;
+    --accent: #d62828;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  body { padding: 56px 28px 96px; max-width: 980px; margin: 0 auto; line-height: 1.55; }
+
+  header { margin-bottom: 48px; }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(42px, 7vw, 74px);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    margin-bottom: 20px;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+  .lede {
+    font-family: var(--serif);
+    font-size: 19px;
+    max-width: 60ch;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  h3 { font-weight: 600; font-size: 14px; margin-bottom: 8px; letter-spacing: 0.03em; }
+  p { margin-bottom: 12px; font-size: 15px; color: #2a2a2a; }
+  ul, ol { padding-left: 20px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; font-size: 15px; }
+
+  section.block {
+    border-top: 1px solid var(--line);
+    padding: 36px 0;
+  }
+  section.block:first-of-type { border-top: 2px solid var(--ink); }
+
+  /* ============ FACE (3x3 grid) ============ */
+  .face {
+    display: inline-grid;
+    grid-template-columns: repeat(3, var(--fs, 24px));
+    grid-template-rows: repeat(3, var(--fs, 24px));
+    gap: 2px;
+    padding: 3px;
+    background: #1a1a1a;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .face i { border-radius: 2px; display: block; }
+  .face i.W { background: var(--W); box-shadow: inset 0 0 0 1px #e5e5e0; }
+  .face i.Y { background: var(--Y); }
+  .face i.R { background: var(--R); }
+  .face i.O { background: var(--O); }
+  .face i.G { background: var(--G); }
+  .face i.B { background: var(--B); }
+  .face i.k { background: var(--unknown); }
+
+  .face.sm { --fs: 18px; }
+  .face.xs { --fs: 14px; }
+
+  /* ============ CUBE NET (all 6 faces unfolded) ============ */
+  .net {
+    display: inline-grid;
+    grid-template-columns: repeat(4, auto);
+    grid-template-rows: repeat(3, auto);
+    gap: 6px;
+    padding: 14px;
+    background: var(--panel);
+    border-radius: 6px;
+    margin: 12px 0;
+  }
+  .net .slot { display: flex; align-items: center; justify-content: center; position: relative; }
+  .net .slot.empty { visibility: hidden; }
+  .net .slot .label {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* net cell positions using grid areas */
+  .net .up    { grid-column: 2; grid-row: 1; }
+  .net .left  { grid-column: 1; grid-row: 2; }
+  .net .front { grid-column: 2; grid-row: 2; }
+  .net .right { grid-column: 3; grid-row: 2; }
+  .net .back  { grid-column: 4; grid-row: 2; }
+  .net .down  { grid-column: 2; grid-row: 3; }
+
+  .net-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 14px 0;
+  }
+  .net-caption {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    padding-left: 4px;
+  }
+  .net-caption b { color: var(--ink); font-weight: 700; }
+
+  /* ============ CUBE ROW (side by side small faces) ============ */
+  .cube-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: flex-end;
+    margin: 16px 0;
+    padding: 18px;
+    background: var(--panel);
+    border-radius: 6px;
+  }
+  figure.face-fig {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  figcaption {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-align: center;
+    max-width: 130px;
+  }
+  figcaption b { color: var(--ink); font-weight: 700; }
+
+  /* ============ NOTATION ============ */
+  .notation {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 4px;
+    margin: 14px 0;
+  }
+  .notation div { font-size: 13px; color: #333; }
+  .notation code {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 14px;
+    margin-right: 6px;
+  }
+
+  /* ============ STEP LAYOUT ============ */
+  .step {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 28px;
+    padding: 40px 0;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 640px) {
+    .step { grid-template-columns: 1fr; gap: 12px; padding: 32px 0; }
+  }
+  .step .num {
+    font-family: var(--serif);
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+  }
+  .step .num small {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    margin-top: 8px;
+  }
+  .step h2 { margin-bottom: 10px; }
+  .step .goal {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 14px;
+  }
+
+  /* ============ ALGO ============ */
+  .algo {
+    background: var(--ink);
+    color: #fff;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    display: inline-block;
+    margin: 4px 8px 4px 0;
+    letter-spacing: 0.06em;
+  }
+  .algo.alt { background: #fff; color: var(--ink); border: 2px solid var(--ink); }
+  .algo-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+  }
+  .algo-row { margin: 12px 0; }
+
+  /* ============ CASES ============ */
+  .cases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .case {
+    background: var(--panel);
+    padding: 14px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  .case .face { margin: 4px auto 10px; }
+  .case strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .case span { font-size: 12px; color: #555; }
+
+  /* ============ CALLOUT ============ */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: #fbf6f5;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14px;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout b { color: var(--accent); }
+
+  /* ============ COLOR LEGEND ============ */
+  .colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 14px 0;
+    padding: 16px;
+    background: var(--panel);
+    border-radius: 4px;
+  }
+  .colors div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+  .swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+    display: inline-block;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+  }
+
+  /* ============ SCRAMBLED / SOLVED HERO NETS ============ */
+  .hero-nets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  @media (max-width: 720px) { .hero-nets { grid-template-columns: 1fr; } }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 2px solid var(--ink);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">Beginner's guide · full-cube visuals</div>
+  <h1>Solve a Rubik's<br>cube <em>from scratch.</em></h1>
+  <p class="lede">Seven steps, six algorithms, and a picture of the whole cube — all six faces — at each stage. Grey means "doesn't matter yet."</p>
+</header>
+
+<!-- COLOR LEGEND -->
+<section class="block">
+  <h2>The six colours &amp; standard orientation</h2>
+  <div class="colors">
+    <div><span class="swatch" style="background:var(--W);"></span> White (bottom eventually)</div>
+    <div><span class="swatch" style="background:var(--Y);"></span> Yellow (top)</div>
+    <div><span class="swatch" style="background:var(--R);"></span> Red (front)</div>
+    <div><span class="swatch" style="background:var(--O);"></span> Orange (back)</div>
+    <div><span class="swatch" style="background:var(--G);"></span> Green (right)</div>
+    <div><span class="swatch" style="background:var(--B);"></span> Blue (left)</div>
+    <div><span class="swatch" style="background:var(--unknown);"></span> Any / don't care</div>
+  </div>
+
+  <h3 style="margin-top: 20px;">HOW THE CUBE UNFOLDS BELOW</h3>
+  <p>When you see a diagram like the one below, imagine peeling the cube open like a cross. The centre square is the front, the sides fold in from there.</p>
+
+  <div class="net-wrap">
+    <div class="net">
+      <div class="slot up"><span class="label">TOP</span><div class="face sm"><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i></div></div>
+      <div class="slot left"><span class="label">LEFT</span><div class="face sm"><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i></div></div>
+      <div class="slot front"><span class="label">FRONT</span><div class="face sm"><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i></div></div>
+      <div class="slot right"><span class="label">RIGHT</span><div class="face sm"><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i></div></div>
+      <div class="slot back"><span class="label">BACK</span><div class="face sm"><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i></div></div>
+      <div class="slot down"><span class="label">BOTTOM</span><div class="face sm"><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i></div></div>
+    </div>
+    <div class="net-caption"><b>A fully solved cube.</b> This is the end goal.</div>
+  </div>
+
+  <p>Note: for steps 1 and 2, we hold <b>white on top</b>. From step 3 onward, we flip so <b>yellow is on top</b>. The nets below reflect whichever orientation you're in at that stage.</p>
+</section>
+
+<!-- FOUNDATIONS -->
+<section class="block">
+  <h2>Three things to know first</h2>
+  <ul>
+    <li><b>Centres are fixed.</b> They define each face's colour. You don't choose where white goes — the cube does.</li>
+    <li><b>You solve in floors.</b> Bottom layer, middle layer, top layer, in that order.</li>
+    <li><b>Three piece types:</b> centres (1 sticker), edges (2 stickers, 12 total), corners (3 stickers, 8 total). A piece keeps its stickers — you're just moving them around.</li>
+  </ul>
+</section>
+
+<!-- NOTATION -->
+<section class="block">
+  <h2>Notation, one minute</h2>
+  <p>Each letter turns that face 90° clockwise, looking straight at it.</p>
+  <div class="notation">
+    <div><code>R</code> right</div>
+    <div><code>L</code> left</div>
+    <div><code>U</code> upper (top)</div>
+    <div><code>D</code> down (bottom)</div>
+    <div><code>F</code> front</div>
+    <div><code>B</code> back</div>
+  </div>
+  <ul>
+    <li><code style="font-family:var(--mono); color:var(--accent); font-weight:700;">R'</code> = right, counter-clockwise</li>
+    <li><code style="font-family:var(--mono); color:var(--accent); font-weight:700;">R2</code> = right, twice (180°)</li>
+  </ul>
+</section>
+
+<!-- SEXY MOVE -->
+<section class="block">
+  <h2>Warm up: the sexy move</h2>
+  <p>The atom of beginner solving. Drill until it's muscle memory.</p>
+  <span class="algo">R U R' U'</span>
+</section>
+
+<!-- STEP 1 -->
+<section class="step">
+  <div class="num">1<small>WHITE CROSS</small></div>
+  <div>
+    <h2>Build the white cross</h2>
+    <p class="goal">White plus on top, with side colours matching centres.</p>
+
+    <div class="net-wrap">
+      <div class="net">
+        <div class="slot up"><div class="face sm"><i class="k"></i><i class="W"></i><i class="k"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="k"></i><i class="W"></i><i class="k"></i></div></div>
+        <div class="slot left"><div class="face sm"><i class="k"></i><i class="B"></i><i class="k"></i><i class="k"></i><i class="B"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot front"><div class="face sm"><i class="k"></i><i class="R"></i><i class="k"></i><i class="k"></i><i class="R"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot right"><div class="face sm"><i class="k"></i><i class="G"></i><i class="k"></i><i class="k"></i><i class="G"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot back"><div class="face sm"><i class="k"></i><i class="O"></i><i class="k"></i><i class="k"></i><i class="O"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot down empty"><div class="face sm"></div></div>
+      </div>
+      <div class="net-caption"><b>State after step 1.</b> White is up. Each side shows its centre colour matching the edge above it.</div>
+    </div>
+
+    <p>Hold cube with white on top. Move each white edge into place so its <i>other</i> colour matches the centre it touches. No fixed algorithm — figure it out visually. Easiest path: bring the edge to the bottom layer, line it up under its target, then turn the side face twice to flip it up.</p>
+    <div class="callout"><b>Wrong result:</b> a "daisy" (white cross on top but side colours don't match centres). Keep going.</div>
+  </div>
+</section>
+
+<!-- STEP 2 -->
+<section class="step">
+  <div class="num">2<small>WHITE CORNERS</small></div>
+  <div>
+    <h2>Insert the white corners</h2>
+    <p class="goal">Full white face. First-layer sides show solid colour bars.</p>
+
+    <div class="net-wrap">
+      <div class="net">
+        <div class="slot up"><div class="face sm"><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i></div></div>
+        <div class="slot left"><div class="face sm"><i class="B"></i><i class="B"></i><i class="B"></i><i class="k"></i><i class="B"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot front"><div class="face sm"><i class="R"></i><i class="R"></i><i class="R"></i><i class="k"></i><i class="R"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot right"><div class="face sm"><i class="G"></i><i class="G"></i><i class="G"></i><i class="k"></i><i class="G"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot back"><div class="face sm"><i class="O"></i><i class="O"></i><i class="O"></i><i class="k"></i><i class="O"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot down empty"><div class="face sm"></div></div>
+      </div>
+      <div class="net-caption"><b>State after step 2.</b> Solid white on top. Each side has its top row as a matching colour bar.</div>
+    </div>
+
+    <p>Find a white corner in the <b>bottom</b> layer. Rotate <code style="font-family:var(--mono);font-weight:700;">D</code> until it sits directly below its target slot. Hold at front-right-bottom, repeat sexy move:</p>
+    <div class="algo-row">
+      <span class="algo-label">REPEAT 1, 3, OR 5 TIMES</span>
+      <span class="algo">R U R' U'</span>
+    </div>
+    <div class="callout"><b>Corner stuck in top wrong?</b> Sexy once to eject it down, then reinsert properly.</div>
+  </div>
+</section>
+
+<!-- STEP 3 -->
+<section class="step">
+  <div class="num">3<small>MIDDLE LAYER</small></div>
+  <div>
+    <h2>Solve the middle edges</h2>
+    <p class="goal">First two layers complete. Only yellow (top) remains.</p>
+
+    <div class="net-wrap">
+      <div class="net">
+        <div class="slot up"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="Y"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+        <div class="slot left"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i></div></div>
+        <div class="slot front"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i></div></div>
+        <div class="slot right"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i></div></div>
+        <div class="slot back"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i></div></div>
+        <div class="slot down"><div class="face sm"><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i></div></div>
+      </div>
+      <div class="net-caption"><b>State after step 3.</b> Cube is flipped (white now on bottom). Bottom two-thirds of every side solid. Only the top yellow layer is a mess.</div>
+    </div>
+
+    <p><b>Flip the cube so white is now on the bottom.</b> Yellow is up. Find a top-layer edge with <i>no yellow</i>. Rotate U so its front colour matches the front centre (upside-down T). Then send it left or right:</p>
+    <div class="algo-row">
+      <span class="algo-label">EDGE GOES RIGHT</span>
+      <span class="algo">U R U' R' U' F' U F</span>
+    </div>
+    <div class="algo-row">
+      <span class="algo-label">EDGE GOES LEFT</span>
+      <span class="algo alt">U' L' U L U F U' F'</span>
+    </div>
+    <div class="callout"><b>Edge trapped wrong in middle?</b> Kick it out with either algorithm, then reinsert.</div>
+  </div>
+</section>
+
+<!-- STEP 4 -->
+<section class="step">
+  <div class="num">4<small>YELLOW CROSS</small></div>
+  <div>
+    <h2>Make the yellow cross</h2>
+    <p class="goal">Yellow plus on top. Ignore side colours.</p>
+
+    <p>Look at the yellow face. You'll see one of these four states:</p>
+
+    <div class="cases">
+      <div class="case">
+        <div class="face"><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="Y"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div>
+        <strong>Dot</strong>
+        <span>Run algo <b>3×</b></span>
+      </div>
+      <div class="case">
+        <div class="face"><i class="k"></i><i class="Y"></i><i class="k"></i><i class="Y"></i><i class="Y"></i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div>
+        <strong>L-shape</strong>
+        <span>Hold L in top-left. <b>2×</b></span>
+      </div>
+      <div class="case">
+        <div class="face"><i class="k"></i><i class="k"></i><i class="k"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="k"></i><i class="k"></i><i class="k"></i></div>
+        <strong>Line</strong>
+        <span>Horizontal. <b>1×</b></span>
+      </div>
+      <div class="case">
+        <div class="face"><i class="k"></i><i class="Y"></i><i class="k"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="k"></i><i class="Y"></i><i class="k"></i></div>
+        <strong>Cross</strong>
+        <span>Done — skip to 5</span>
+      </div>
+    </div>
+
+    <div class="algo-row">
+      <span class="algo">F R U R' U' F'</span>
+    </div>
+    <p style="font-size:14px; color:var(--muted);">Same algorithm each time. Progression is always dot → L → line → cross.</p>
+
+    <div class="net-wrap" style="margin-top: 18px;">
+      <div class="net">
+        <div class="slot up"><div class="face sm"><i class="k"></i><i class="Y"></i><i class="k"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="k"></i><i class="Y"></i><i class="k"></i></div></div>
+        <div class="slot left"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i></div></div>
+        <div class="slot front"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i></div></div>
+        <div class="slot right"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i></div></div>
+        <div class="slot back"><div class="face sm"><i class="k"></i><i class="k"></i><i class="k"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i></div></div>
+        <div class="slot down"><div class="face sm"><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i></div></div>
+      </div>
+      <div class="net-caption"><b>State after step 4.</b> Yellow cross visible on top. Top corners still any colour.</div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 5 -->
+<section class="step">
+  <div class="num">5<small>YELLOW FACE</small></div>
+  <div>
+    <h2>Orient all yellow corners</h2>
+    <p class="goal">Entire top face is yellow. Sides will still be messy.</p>
+
+    <div class="net-wrap">
+      <div class="net">
+        <div class="slot up"><div class="face sm"><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i></div></div>
+        <div class="slot left"><div class="face sm"><i class="R"></i><i class="k"></i><i class="G"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i></div></div>
+        <div class="slot front"><div class="face sm"><i class="G"></i><i class="k"></i><i class="B"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i></div></div>
+        <div class="slot right"><div class="face sm"><i class="O"></i><i class="k"></i><i class="R"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i></div></div>
+        <div class="slot back"><div class="face sm"><i class="B"></i><i class="k"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i></div></div>
+        <div class="slot down"><div class="face sm"><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i></div></div>
+      </div>
+      <div class="net-caption"><b>State after step 5.</b> Top is fully yellow. Top-row side stickers are scrambled — expected.</div>
+    </div>
+
+    <p>This is <b>Sune</b>. Never rotate the whole cube between reps — only turn U to bring the next unsolved corner to the front-left-top slot.</p>
+    <div class="algo-row">
+      <span class="algo">R U R' U R U2 R'</span>
+    </div>
+    <ul>
+      <li><b>0 yellows on top:</b> hold with a yellow sticker on the front-left <i>face</i>. Sune. Look again.</li>
+      <li><b>1 yellow on top:</b> hold that corner at front-left-top. Sune. Look again.</li>
+      <li><b>2 yellows on top:</b> hold one at front-left-top. Sune. Look again.</li>
+    </ul>
+    <div class="callout"><b>It gets worse before better.</b> Trust it — the yellow face will complete in 1–3 reps.</div>
+  </div>
+</section>
+
+<!-- STEP 6 -->
+<section class="step">
+  <div class="num">6<small>CORNER SWAP</small></div>
+  <div>
+    <h2>Position the corners</h2>
+    <p class="goal">Each corner sits between its correct two centres.</p>
+
+    <div class="net-wrap">
+      <div class="net">
+        <div class="slot up"><div class="face sm"><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i></div></div>
+        <div class="slot left"><div class="face sm"><i class="B"></i><i class="k"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i></div></div>
+        <div class="slot front"><div class="face sm"><i class="R"></i><i class="k"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i></div></div>
+        <div class="slot right"><div class="face sm"><i class="G"></i><i class="k"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i></div></div>
+        <div class="slot back"><div class="face sm"><i class="O"></i><i class="k"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i></div></div>
+        <div class="slot down"><div class="face sm"><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i></div></div>
+      </div>
+      <div class="net-caption"><b>State after step 6.</b> Corners home — top-row corners of each side match the centre. Only top edges (middle of top row) still wrong.</div>
+    </div>
+
+    <p>Find a corner where the two <i>side</i> stickers match the two centres it sits between (yellow can point any direction). Hold that solved corner at <b>front-right-top</b>.</p>
+    <div class="algo-row">
+      <span class="algo">U R U' L' U R' U' L</span>
+    </div>
+    <div class="callout"><b>No corner solved?</b> Run once from any angle. One will now be correct — re-orient and run again.</div>
+  </div>
+</section>
+
+<!-- STEP 7 -->
+<section class="step">
+  <div class="num">7<small>EDGE CYCLE</small></div>
+  <div>
+    <h2>Position the last edges</h2>
+    <p class="goal">Solved cube.</p>
+
+    <div class="net-wrap">
+      <div class="net">
+        <div class="slot up"><div class="face sm"><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i><i class="Y"></i></div></div>
+        <div class="slot left"><div class="face sm"><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i><i class="B"></i></div></div>
+        <div class="slot front"><div class="face sm"><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i><i class="R"></i></div></div>
+        <div class="slot right"><div class="face sm"><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i><i class="G"></i></div></div>
+        <div class="slot back"><div class="face sm"><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i><i class="O"></i></div></div>
+        <div class="slot down"><div class="face sm"><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i><i class="W"></i></div></div>
+      </div>
+      <div class="net-caption"><b>Final state — solved.</b> All six faces one colour each.</div>
+    </div>
+
+    <p>Find the one already-solved top edge (its side colour matches its centre). Hold it at the <b>back</b>.</p>
+    <div class="algo-row">
+      <span class="algo">R U' R U R U R U' R' U' R2</span>
+    </div>
+    <div class="callout"><b>No solved edge?</b> Run once from any angle. One will lock in — move it to the back, run again.</div>
+  </div>
+</section>
+
+<!-- SUMMARY -->
+<section class="block">
+  <h2>All six algorithms, one card</h2>
+  <div class="notation" style="grid-template-columns: 1fr; gap: 10px;">
+    <div><code>1</code> White cross — intuitive</div>
+    <div><code>2</code> White corners — <span style="font-family:var(--mono);font-weight:700;">R U R' U'</span></div>
+    <div><code>3R</code> Middle right — <span style="font-family:var(--mono);font-weight:700;">U R U' R' U' F' U F</span></div>
+    <div><code>3L</code> Middle left — <span style="font-family:var(--mono);font-weight:700;">U' L' U L U F U' F'</span></div>
+    <div><code>4</code> Yellow cross — <span style="font-family:var(--mono);font-weight:700;">F R U R' U' F'</span></div>
+    <div><code>5</code> Yellow face — <span style="font-family:var(--mono);font-weight:700;">R U R' U R U2 R'</span></div>
+    <div><code>6</code> Corner swap — <span style="font-family:var(--mono);font-weight:700;">U R U' L' U R' U' L</span></div>
+    <div><code>7</code> Edge cycle — <span style="font-family:var(--mono);font-weight:700;">R U' R U R U R U' R' U' R2</span></div>
+  </div>
+</section>
+
+<footer>
+  <span>Six algorithms · Seven steps · One solved cube</span>
+  <span>First solve: 30 min. Tenth: under 5.</span>
+</footer>
+
+</body>
+</html>

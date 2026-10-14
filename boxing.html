@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Boxing Basics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --bg: #f7f4ef;
+  --ink: #1a1a1a;
+  --muted: #666;
+  --accent: #c8102e;
+  --accent-soft: #f4d3d8;
+  --line: #d9d4cc;
+  --card: #ffffff;
+  --gold: #b8860b;
+  --skin: #f2c9a0;
+  --skin-shade: #d9a878;
+  --glove: #c8102e;
+  --glove-shade: #8b0a1f;
+}
+* { box-sizing: border-box; }
+html { color-scheme: light; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  line-height: 1.6;
+}
+.wrap { max-width: 860px; margin: 0 auto; padding: 56px 16px 80px; }
+.eyebrow {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700;
+}
+h1 {
+  font-size: clamp(38px, 6vw, 62px);
+  line-height: 1.05; margin: 8px 0 12px; letter-spacing: -0.02em;
+}
+.lede { font-size: 19px; color: var(--muted); max-width: 640px; }
+h2 {
+  font-size: 28px; margin: 56px 0 6px; letter-spacing: -0.01em;
+  border-top: 1px solid var(--line); padding-top: 28px;
+}
+h2 .num {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: var(--accent); font-size: 14px; letter-spacing: 0.2em;
+  display: block; margin-bottom: 6px;
+}
+h3 { font-size: 20px; margin: 24px 0 8px; }
+p { margin: 10px 0; }
+.pull {
+  border-left: 3px solid var(--accent); padding: 4px 0 4px 16px;
+  color: var(--ink); font-style: italic; margin: 20px 0;
+}
+.analogy {
+  background: var(--accent-soft); border-radius: 8px;
+  padding: 14px 18px; margin: 16px 0; font-size: 15px;
+}
+.analogy b {
+  color: var(--accent); font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 16px;
+}
+.card h4 { margin: 0 0 6px; font-size: 16px; font-family: 'Helvetica Neue', Arial, sans-serif; }
+.card .k { font-size: 12px; color: var(--muted); font-family: 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+figure { margin: 24px 0; }
+figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; }
+svg { width: 100%; height: auto; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+.tag { display: inline-block; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); padding: 2px 8px; border-radius: 999px; margin-right: 6px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
+strong { color: var(--ink); }
+.viz-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .viz-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">A Field Guide</div>
+  <h1>Boxing Basics</h1>
+  <p class="lede">Most beginners think boxing is about punching hard. It isn't. It's about balance, distance, and timing. Four things make up the foundation: stance, footwork, punches, defense. Everything else sits on top of these.</p>
+
+  <!-- HERO ILLUSTRATION -->
+  <figure>
+    <svg viewBox="0 0 600 320" role="img" aria-label="Boxer in ready stance">
+      <defs>
+        <linearGradient id="ringFloor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#efe6d5"/>
+          <stop offset="1" stop-color="#d9c9a8"/>
+        </linearGradient>
+      </defs>
+      <!-- ring floor -->
+      <rect x="0" y="240" width="600" height="80" fill="url(#ringFloor)"/>
+      <line x1="0" y1="240" x2="600" y2="240" stroke="#b8a577" stroke-width="1.5"/>
+      <!-- ropes -->
+      <line x1="0" y1="150" x2="600" y2="150" stroke="#c8102e" stroke-width="3"/>
+      <line x1="0" y1="180" x2="600" y2="180" stroke="#ffffff" stroke-width="3"/>
+      <line x1="0" y1="210" x2="600" y2="210" stroke="#1a1a1a" stroke-width="3"/>
+
+      <!-- boxer body -->
+      <g transform="translate(300,240)">
+        <!-- back leg -->
+        <path d="M -20 0 L -35 -60 L -20 -80" stroke="#1a1a1a" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- front leg -->
+        <path d="M 20 0 L 20 -70" stroke="#1a1a1a" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- shoe back -->
+        <ellipse cx="-22" cy="-2" rx="18" ry="6" fill="#1a1a1a"/>
+        <ellipse cx="22" cy="-2" rx="18" ry="6" fill="#1a1a1a"/>
+        <!-- shorts -->
+        <path d="M -30 -80 L 30 -80 L 34 -110 L -34 -110 Z" fill="#c8102e"/>
+        <line x1="0" y1="-110" x2="0" y2="-80" stroke="#8b0a1f" stroke-width="2"/>
+        <!-- torso -->
+        <path d="M -30 -110 Q -32 -160 -22 -180 L 22 -180 Q 32 -160 30 -110 Z" fill="#f2c9a0"/>
+        <!-- muscle shading -->
+        <path d="M -18 -170 Q 0 -155 18 -170" fill="none" stroke="#d9a878" stroke-width="1.5"/>
+        <path d="M 0 -175 L 0 -125" stroke="#d9a878" stroke-width="1"/>
+        <!-- neck -->
+        <rect x="-9" y="-195" width="18" height="18" fill="#f2c9a0"/>
+        <!-- head -->
+        <circle cx="0" cy="-208" r="18" fill="#f2c9a0"/>
+        <!-- hair -->
+        <path d="M -16 -215 Q 0 -230 16 -215 L 16 -208 Q 0 -212 -16 -208 Z" fill="#3a2a1a"/>
+        <!-- eyes/mouth -->
+        <circle cx="-5" cy="-208" r="1.5" fill="#1a1a1a"/>
+        <circle cx="5" cy="-208" r="1.5" fill="#1a1a1a"/>
+        <path d="M -3 -200 L 3 -200" stroke="#1a1a1a" stroke-width="1"/>
+        <!-- rear arm cocked -->
+        <path d="M 22 -175 Q 45 -160 42 -140 Q 40 -125 28 -130" stroke="#f2c9a0" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- rear glove (near chin) -->
+        <circle cx="18" cy="-195" r="16" fill="#c8102e"/>
+        <path d="M 6 -195 Q 18 -205 30 -195" fill="none" stroke="#8b0a1f" stroke-width="1.5"/>
+        <!-- lead arm forward -->
+        <path d="M -22 -175 Q -40 -170 -55 -180" stroke="#f2c9a0" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- lead glove -->
+        <circle cx="-62" cy="-183" r="16" fill="#c8102e"/>
+        <path d="M -74 -183 Q -62 -195 -50 -183" fill="none" stroke="#8b0a1f" stroke-width="1.5"/>
+      </g>
+
+      <!-- labels -->
+      <g font-family="Helvetica" font-size="11" fill="#1a1a1a">
+        <line x1="240" y1="45" x2="290" y2="55" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="130" y="48">chin tucked, eyes on chest</text>
+        <line x1="180" y1="80" x2="240" y2="80" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="80" y="83">lead hand up, jab-ready</text>
+        <line x1="415" y1="60" x2="325" y2="55" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="420" y="63">rear glove pinned to jaw</text>
+        <line x1="410" y1="130" x2="335" y2="130" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="415" y="133">shoulders bladed</text>
+        <line x1="430" y1="220" x2="330" y2="220" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="435" y="223">knees soft, weight centered</text>
+      </g>
+    </svg>
+    <figcaption>The ready stance. Every basic in this guide starts and ends here.</figcaption>
+  </figure>
+
+  <h2><span class="num">01 · The Four Basics</span>What you actually have to learn</h2>
+  <p>Boxing training is almost always taught in this order. Skip a step and the ones after it never quite work.</p>
+  <div class="grid">
+    <div class="card"><div class="k">Basic 1</div><h4>Stance</h4><p>Your platform. Balance and readiness.</p></div>
+    <div class="card"><div class="k">Basic 2</div><h4>Footwork</h4><p>How you control distance.</p></div>
+    <div class="card"><div class="k">Basic 3</div><h4>Punches</h4><p>Six of them, in three shapes.</p></div>
+    <div class="card"><div class="k">Basic 4</div><h4>Defense</h4><p>Four ways to not get hit.</p></div>
+  </div>
+  <div class="analogy"><b>A way to remember it</b><br>Treat them like learning a language. Stance is posture, footwork is grammar, punches are vocabulary, defense is listening. A big vocabulary with broken grammar still sounds off.</div>
+
+  <!-- ============ STANCE ============ -->
+  <h2><span class="num">02 · Stance</span>Your platform</h2>
+  <p>A stance is a tripod. Two feet, plus your center of gravity between them. When all three are stable, you can punch, move, or absorb a hit without falling. When any one of them is off, you're a step away from the canvas.</p>
+
+  <figure>
+    <svg viewBox="0 0 600 320" role="img" aria-label="Foot placement from above">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#666"/>
+        </marker>
+      </defs>
+      <!-- opponent silhouette -->
+      <g transform="translate(300,50)">
+        <circle r="14" fill="#d9d4cc"/>
+        <rect x="-16" y="12" width="32" height="30" fill="#d9d4cc"/>
+        <text y="60" font-family="Helvetica" font-size="10" fill="#666" text-anchor="middle">opponent</text>
+      </g>
+      <!-- centerline -->
+      <line x1="300" y1="80" x2="300" y2="300" stroke="#999" stroke-dasharray="3 4"/>
+
+      <!-- back foot (orthodox: right foot at right-back) -->
+      <g transform="translate(340,240) rotate(30)">
+        <ellipse cx="0" cy="0" rx="18" ry="34" fill="#c8102e"/>
+        <ellipse cx="0" cy="-20" rx="16" ry="14" fill="#c8102e"/>
+      </g>
+      <text x="380" y="260" font-family="Helvetica" font-size="12" fill="#c8102e">rear foot (right)</text>
+      <text x="380" y="275" font-family="Helvetica" font-size="10" fill="#666">~45° angle</text>
+
+      <!-- front foot -->
+      <g transform="translate(260,170) rotate(-10)">
+        <ellipse cx="0" cy="0" rx="18" ry="34" fill="#1a1a1a"/>
+        <ellipse cx="0" cy="-20" rx="16" ry="14" fill="#1a1a1a"/>
+      </g>
+      <text x="90" y="170" font-family="Helvetica" font-size="12" fill="#1a1a1a">lead foot (left)</text>
+      <text x="90" y="185" font-family="Helvetica" font-size="10" fill="#666">points near opponent</text>
+
+      <!-- shoulder width bracket -->
+      <path d="M 245 290 L 245 285 L 355 285 L 355 290" fill="none" stroke="#666" stroke-width="1"/>
+      <text x="300" y="308" font-family="Helvetica" font-size="11" fill="#666" text-anchor="middle">shoulder-width apart</text>
+
+      <!-- center of gravity -->
+      <circle cx="300" cy="205" r="8" fill="#b8860b"/>
+      <line x1="300" y1="205" x2="440" y2="140" stroke="#b8860b" stroke-width="1" marker-end="url(#arrow)"/>
+      <text x="450" y="140" font-family="Helvetica" font-size="11" fill="#b8860b">weight centered 50/50</text>
+
+      <!-- title -->
+      <text x="30" y="30" font-family="Helvetica" font-size="12" font-weight="700" fill="#c8102e" letter-spacing="2">ORTHODOX STANCE · TOP VIEW</text>
+    </svg>
+    <figcaption>Feet shoulder-width apart, staggered. Lead points slightly inward, rear at 45°.</figcaption>
+  </figure>
+
+  <h3>The four checks every coach repeats</h3>
+  <div class="grid">
+    <div class="card"><p><span class="tag">1</span> Feet shoulder-width, lead foot forward, rear foot around 45 degrees.</p></div>
+    <div class="card"><p><span class="tag">2</span> Knees soft, never locked. Locked knees mean no balance.</p></div>
+    <div class="card"><p><span class="tag">3</span> Hands high. Lead glove at the cheekbone, rear glove at the jaw.</p></div>
+    <div class="card"><p><span class="tag">4</span> Chin down. Look at the chest; peripheral vision will catch the punches.</p></div>
+  </div>
+
+  <div class="analogy"><b>Why stand bladed instead of square?</b><br>A square stance gives the opponent your whole chest to aim at. Turning sideways cuts the target roughly in half, and it also loads up the back hand so a cross has farther to travel and more rotation behind it.</div>
+
+  <!-- ============ FOOTWORK ============ -->
+  <h2><span class="num">03 · Footwork</span>Moving without losing your base</h2>
+  <p>Position matters more than power. A fighter who's in the right spot can land a soft jab; a stronger fighter in the wrong spot lands nothing. The rule for all movement is the same: <strong>the foot closest to where you want to go moves first, and the other follows to reset the stance.</strong> Feet never cross.</p>
+
+  <figure>
+    <svg viewBox="0 0 600 300" role="img" aria-label="Four footwork patterns">
+      <g font-family="Helvetica" font-size="11">
+        <!-- forward -->
+        <g transform="translate(40,40)">
+          <text x="55" y="0" font-size="12" fill="#c8102e" text-anchor="middle" font-weight="700">STEP IN</text>
+          <ellipse cx="45" cy="60" rx="12" ry="24" fill="#1a1a1a"/>
+          <ellipse cx="70" cy="105" rx="12" ry="24" fill="#c8102e" transform="rotate(30 70 105)"/>
+          <ellipse cx="45" cy="30" rx="12" ry="24" fill="none" stroke="#1a1a1a" stroke-dasharray="3 3"/>
+          <ellipse cx="70" cy="75" rx="12" ry="24" fill="none" stroke="#c8102e" stroke-dasharray="3 3" transform="rotate(30 70 75)"/>
+          <path d="M 45 55 L 45 35" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <path d="M 70 100 L 70 80" stroke="#c8102e" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="55" y="170" font-size="10" fill="#666" text-anchor="middle">lead steps up,</text>
+          <text x="55" y="184" font-size="10" fill="#666" text-anchor="middle">rear drags forward</text>
+        </g>
+        <!-- back -->
+        <g transform="translate(180,40)">
+          <text x="55" y="0" font-size="12" fill="#c8102e" text-anchor="middle" font-weight="700">STEP OUT</text>
+          <ellipse cx="45" cy="60" rx="12" ry="24" fill="#1a1a1a"/>
+          <ellipse cx="70" cy="105" rx="12" ry="24" fill="#c8102e" transform="rotate(30 70 105)"/>
+          <ellipse cx="45" cy="90" rx="12" ry="24" fill="none" stroke="#1a1a1a" stroke-dasharray="3 3"/>
+          <ellipse cx="70" cy="135" rx="12" ry="24" fill="none" stroke="#c8102e" stroke-dasharray="3 3" transform="rotate(30 70 135)"/>
+          <path d="M 70 105 L 70 130" stroke="#c8102e" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <path d="M 45 60 L 45 85" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="55" y="170" font-size="10" fill="#666" text-anchor="middle">rear steps back,</text>
+          <text x="55" y="184" font-size="10" fill="#666" text-anchor="middle">lead drags with it</text>
+        </g>
+        <!-- lateral -->
+        <g transform="translate(320,40)">
+          <text x="55" y="0" font-size="12" fill="#c8102e" text-anchor="middle" font-weight="700">STEP LEFT</text>
+          <ellipse cx="60" cy="60" rx="12" ry="24" fill="#1a1a1a"/>
+          <ellipse cx="85" cy="105" rx="12" ry="24" fill="#c8102e" transform="rotate(30 85 105)"/>
+          <ellipse cx="30" cy="60" rx="12" ry="24" fill="none" stroke="#1a1a1a" stroke-dasharray="3 3"/>
+          <ellipse cx="55" cy="105" rx="12" ry="24" fill="none" stroke="#c8102e" stroke-dasharray="3 3" transform="rotate(30 55 105)"/>
+          <path d="M 55 60 L 35 60" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <path d="M 80 105 L 60 105" stroke="#c8102e" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="55" y="170" font-size="10" fill="#666" text-anchor="middle">lead pushes right,</text>
+          <text x="55" y="184" font-size="10" fill="#666" text-anchor="middle">rear follows left</text>
+        </g>
+        <!-- pivot -->
+        <g transform="translate(460,40)">
+          <text x="60" y="0" font-size="12" fill="#c8102e" text-anchor="middle" font-weight="700">PIVOT</text>
+          <ellipse cx="60" cy="60" rx="12" ry="24" fill="#1a1a1a"/>
+          <ellipse cx="40" cy="115" rx="12" ry="24" fill="#c8102e" transform="rotate(-40 40 115)"/>
+          <ellipse cx="90" cy="115" rx="12" ry="24" fill="none" stroke="#c8102e" stroke-dasharray="3 3" transform="rotate(40 90 115)"/>
+          <path d="M 40 115 A 40 40 0 0 1 90 115" fill="none" stroke="#c8102e" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <circle cx="60" cy="60" r="3" fill="#b8860b"/>
+          <text x="60" y="170" font-size="10" fill="#666" text-anchor="middle">lead is pivot point,</text>
+          <text x="60" y="184" font-size="10" fill="#666" text-anchor="middle">rear swings around</text>
+        </g>
+        <text x="300" y="270" font-size="11" fill="#666" text-anchor="middle">Solid = starting position · Dashed = ending position · Black = lead · Red = rear</text>
+      </g>
+    </svg>
+    <figcaption>Four patterns cover 90% of movement. Feet never cross; stance is always reset by the end.</figcaption>
+  </figure>
+
+  <div class="analogy"><b>How it feels</b><br>Good footwork is more like a shuffle than a walk. Short steps, feet close to the floor, weight even. The moment both feet are in the air at the same time, or one crosses the other, a hook can land and you have no way to brace against it.</div>
+
+  <!-- ============ PUNCHES ============ -->
+  <h2><span class="num">04 · The Six Punches</span>Six punches, three shapes</h2>
+  <p>Boxing has six punches. Every combination you see in a professional fight is some arrangement of these. Coaches number them so they can shout combos during a round. "One-two-three" means jab, cross, lead hook.</p>
+
+  <figure>
+    <svg viewBox="0 0 600 360" role="img" aria-label="Six punches around a torso">
+      <g font-family="Helvetica" font-size="12">
+        <!-- torso -->
+        <ellipse cx="300" cy="200" rx="55" ry="85" fill="#f2c9a0" stroke="#d9a878" stroke-width="1.5"/>
+        <circle cx="300" cy="100" r="30" fill="#f2c9a0" stroke="#d9a878" stroke-width="1.5"/>
+        <path d="M 275 90 Q 300 78 325 90" fill="none" stroke="#3a2a1a" stroke-width="6"/>
+        <circle cx="292" cy="100" r="1.5" fill="#1a1a1a"/>
+        <circle cx="308" cy="100" r="1.5" fill="#1a1a1a"/>
+        <path d="M 296 112 L 304 112" stroke="#1a1a1a" stroke-width="1"/>
+
+        <!-- 1 jab -->
+        <line x1="240" y1="170" x2="90" y2="170" stroke="#c8102e" stroke-width="2" marker-end="url(#arrow)"/>
+        <circle cx="70" cy="170" r="16" fill="#c8102e"/>
+        <text x="70" y="174" fill="white" text-anchor="middle" font-weight="700">1</text>
+        <text x="30" y="200" fill="#1a1a1a" font-weight="700">Jab</text>
+        <text x="30" y="214" fill="#666" font-size="10">lead straight · fast · sets up</text>
+
+        <!-- 2 cross -->
+        <line x1="360" y1="170" x2="510" y2="170" stroke="#c8102e" stroke-width="3" marker-end="url(#arrow)"/>
+        <circle cx="530" cy="170" r="16" fill="#c8102e"/>
+        <text x="530" y="174" fill="white" text-anchor="middle" font-weight="700">2</text>
+        <text x="490" y="200" fill="#1a1a1a" font-weight="700">Cross</text>
+        <text x="490" y="214" fill="#666" font-size="10">rear straight · power</text>
+
+        <!-- 3 lead hook -->
+        <path d="M 240 220 C 180 230 130 260 90 260" fill="none" stroke="#b8860b" stroke-width="2.5" marker-end="url(#arrow)"/>
+        <circle cx="80" cy="260" r="16" fill="#b8860b"/>
+        <text x="80" y="264" fill="white" text-anchor="middle" font-weight="700">3</text>
+        <text x="30" y="290" fill="#1a1a1a" font-weight="700">Lead hook</text>
+        <text x="30" y="304" fill="#666" font-size="10">curves in from the side</text>
+
+        <!-- 4 rear hook -->
+        <path d="M 360 220 C 420 230 470 260 510 260" fill="none" stroke="#b8860b" stroke-width="2.5" marker-end="url(#arrow)"/>
+        <circle cx="520" cy="260" r="16" fill="#b8860b"/>
+        <text x="520" y="264" fill="white" text-anchor="middle" font-weight="700">4</text>
+        <text x="490" y="290" fill="#1a1a1a" font-weight="700">Rear hook</text>
+        <text x="490" y="304" fill="#666" font-size="10">powerful, rarely used</text>
+
+        <!-- 5 lead uppercut -->
+        <path d="M 260 300 C 240 240 250 150 285 125" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow)"/>
+        <circle cx="260" cy="325" r="16" fill="#1a1a1a"/>
+        <text x="260" y="329" fill="white" text-anchor="middle" font-weight="700">5</text>
+        <text x="220" y="355" fill="#1a1a1a" font-weight="700">Lead uppercut</text>
+
+        <!-- 6 rear uppercut -->
+        <path d="M 340 300 C 360 240 350 150 315 125" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow)"/>
+        <circle cx="340" cy="325" r="16" fill="#1a1a1a"/>
+        <text x="340" y="329" fill="white" text-anchor="middle" font-weight="700">6</text>
+        <text x="320" y="355" fill="#1a1a1a" font-weight="700">Rear uppercut</text>
+
+        <text x="30" y="30" font-size="12" font-weight="700" fill="#c8102e" letter-spacing="2">THREE SHAPES · TWO HANDS</text>
+      </g>
+    </svg>
+    <figcaption>Straights (red) travel in a line. Hooks (gold) curl horizontally. Uppercuts (black) rise vertically.</figcaption>
+  </figure>
+
+  <div class="grid">
+    <div class="card"><div class="k">1 · Jab</div><h4>Measuring stick</h4><p>Fast, cheap, low risk. Used to find the range, interrupt the opponent, and set up heavier punches.</p></div>
+    <div class="card"><div class="k">2 · Cross</div><h4>Main power</h4><p>Rear hand, with the whole body rotating behind it. Power starts at the back foot.</p></div>
+    <div class="card"><div class="k">3 · Lead hook</div><h4>From the side</h4><p>Horizontal arc to the head or ribs. Comes in on a line the guard isn't covering.</p></div>
+    <div class="card"><div class="k">4 · Rear hook</div><h4>Slow and heavy</h4><p>A lot of power but a long way to travel. Usually thrown only when the opponent is already hurt.</p></div>
+    <div class="card"><div class="k">5 / 6 · Uppercuts</div><h4>From below</h4><p>Travels up through the middle. Works best against a bent-over opponent or one with dropped hands.</p></div>
+    <div class="card"><div class="k">Reading combos</div><h4>Just numbers</h4><p>"1-2" is jab, cross. "1-1-2" is two jabs then a cross. "1-2-3" adds a lead hook on the end.</p></div>
+  </div>
+
+  <!-- Kinetic chain visual -->
+  <figure>
+    <svg viewBox="0 0 600 280" role="img" aria-label="Kinetic chain of a cross">
+      <g font-family="Helvetica" font-size="11">
+        <!-- floor -->
+        <line x1="0" y1="240" x2="600" y2="240" stroke="#b8a577" stroke-width="1.5"/>
+        <!-- boxer sketch mid-cross -->
+        <g transform="translate(220,240)">
+          <!-- rear foot pivoting -->
+          <ellipse cx="-30" cy="-3" rx="18" ry="6" fill="#c8102e"/>
+          <path d="M -30 -3 A 8 8 0 0 1 -18 -3" fill="none" stroke="#c8102e" stroke-width="2" marker-end="url(#arrow)"/>
+          <!-- front foot -->
+          <ellipse cx="15" cy="-3" rx="18" ry="6" fill="#1a1a1a"/>
+          <!-- legs -->
+          <path d="M -25 -3 L -20 -60" stroke="#1a1a1a" stroke-width="12" stroke-linecap="round"/>
+          <path d="M 15 -3 L 15 -70" stroke="#1a1a1a" stroke-width="12" stroke-linecap="round"/>
+          <!-- hips -->
+          <ellipse cx="-2" cy="-85" rx="30" ry="14" fill="#c8102e"/>
+          <!-- torso rotating -->
+          <path d="M -25 -95 Q -10 -140 -20 -180 L 20 -180 Q 30 -140 25 -95 Z" fill="#f2c9a0"/>
+          <!-- head -->
+          <circle cx="5" cy="-195" r="14" fill="#f2c9a0"/>
+          <!-- rear arm extended (the cross) -->
+          <path d="M 15 -175 Q 60 -170 100 -175" stroke="#f2c9a0" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="110" cy="-175" r="14" fill="#c8102e"/>
+          <!-- lead arm returning -->
+          <path d="M -20 -175 Q -10 -195 5 -190" stroke="#f2c9a0" stroke-width="12" stroke-linecap="round" fill="none"/>
+          <circle cx="8" cy="-190" r="12" fill="#c8102e"/>
+        </g>
+        <!-- numbered arrows showing sequence -->
+        <g>
+          <circle cx="200" cy="238" r="12" fill="#c8102e"/><text x="200" y="242" fill="white" text-anchor="middle" font-weight="700">1</text>
+          <text x="180" y="265" fill="#c8102e" font-weight="700">back foot</text>
+          <text x="180" y="278" fill="#666" font-size="10">pivots into floor</text>
+
+          <circle cx="220" cy="160" r="12" fill="#c8102e"/><text x="220" y="164" fill="white" text-anchor="middle" font-weight="700">2</text>
+          <text x="240" y="160" fill="#c8102e" font-weight="700">hips rotate</text>
+
+          <circle cx="220" cy="100" r="12" fill="#c8102e"/><text x="220" y="104" fill="white" text-anchor="middle" font-weight="700">3</text>
+          <text x="240" y="100" fill="#c8102e" font-weight="700">shoulders follow</text>
+
+          <circle cx="320" cy="70" r="12" fill="#c8102e"/><text x="320" y="74" fill="white" text-anchor="middle" font-weight="700">4</text>
+          <text x="340" y="70" fill="#c8102e" font-weight="700">arm extends</text>
+
+          <circle cx="450" cy="70" r="12" fill="#c8102e"/><text x="450" y="74" fill="white" text-anchor="middle" font-weight="700">5</text>
+          <text x="470" y="70" fill="#c8102e" font-weight="700">fist lands</text>
+        </g>
+        <text x="30" y="30" font-size="12" font-weight="700" fill="#c8102e" letter-spacing="2">THE KINETIC CHAIN</text>
+      </g>
+    </svg>
+    <figcaption>Every hard punch starts at the floor and travels up through the body before it reaches the fist.</figcaption>
+  </figure>
+
+  <div class="pull">Power doesn't come from the arm. It comes from the ground, through the legs and hips, and the fist just happens to be where the chain ends.</div>
+
+  <!-- ============ DEFENSE ============ -->
+  <h2><span class="num">05 · Defense</span>Four responses to an incoming punch</h2>
+  <p>When a punch is on its way, there are four things you can do. The first two keep you safer but tire you out; the last two put you closer to a counter but need more skill to pull off.</p>
+
+  <figure>
+    <svg viewBox="0 0 600 280" role="img" aria-label="Four defenses illustrated on a head">
+      <g font-family="Helvetica" font-size="11">
+        <!-- BLOCK -->
+        <g transform="translate(80,120)">
+          <circle r="34" fill="#f2c9a0" stroke="#d9a878"/>
+          <!-- gloves in front -->
+          <circle cx="-14" cy="0" r="18" fill="#c8102e"/>
+          <circle cx="14" cy="0" r="18" fill="#c8102e"/>
+          <!-- incoming punch -->
+          <path d="M -80 0 L -40 0" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow)"/>
+          <text y="70" text-anchor="middle" font-weight="700" fill="#c8102e" letter-spacing="1">BLOCK</text>
+          <text y="86" text-anchor="middle" fill="#666" font-size="10">gloves absorb it</text>
+          <text y="100" text-anchor="middle" fill="#666" font-size="10">safe · costs energy</text>
+        </g>
+        <!-- PARRY -->
+        <g transform="translate(220,120)">
+          <circle r="34" fill="#f2c9a0" stroke="#d9a878"/>
+          <!-- glove batting punch -->
+          <circle cx="-20" cy="10" r="16" fill="#c8102e" transform="rotate(-20 -20 10)"/>
+          <!-- incoming punch deflected -->
+          <path d="M -80 0 L -50 5 L -30 25" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow)"/>
+          <text y="70" text-anchor="middle" font-weight="700" fill="#b8860b" letter-spacing="1">PARRY</text>
+          <text y="86" text-anchor="middle" fill="#666" font-size="10">glove redirects it</text>
+          <text y="100" text-anchor="middle" fill="#666" font-size="10">opens counter</text>
+        </g>
+        <!-- SLIP -->
+        <g transform="translate(370,120)">
+          <!-- head tilted off line -->
+          <circle cx="15" r="34" fill="#f2c9a0" stroke="#d9a878"/>
+          <!-- ghost of original -->
+          <circle r="34" fill="none" stroke="#d9d4cc" stroke-dasharray="3 3"/>
+          <!-- punch passing through empty space -->
+          <path d="M -80 0 L 60 0" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow)"/>
+          <text y="70" text-anchor="middle" font-weight="700" fill="#1a1a1a" letter-spacing="1">SLIP</text>
+          <text y="86" text-anchor="middle" fill="#666" font-size="10">head off line</text>
+          <text y="100" text-anchor="middle" fill="#666" font-size="10">hands stay free</text>
+        </g>
+        <!-- ROLL -->
+        <g transform="translate(510,120)">
+          <!-- head bent under -->
+          <circle cx="0" cy="25" r="34" fill="#f2c9a0" stroke="#d9a878"/>
+          <circle r="34" fill="none" stroke="#d9d4cc" stroke-dasharray="3 3"/>
+          <!-- punch passes over -->
+          <path d="M -80 -5 L 40 -5" stroke="#1a1a1a" stroke-width="2" marker-end="url(#arrow)"/>
+          <path d="M 0 25 Q -5 0 0 -25" fill="none" stroke="#c8102e" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text y="80" text-anchor="middle" font-weight="700" fill="#666" letter-spacing="1">ROLL</text>
+          <text y="96" text-anchor="middle" fill="#666" font-size="10">bend under it</text>
+          <text y="110" text-anchor="middle" fill="#666" font-size="10">counter as you rise</text>
+        </g>
+        <line x1="30" y1="240" x2="570" y2="240" stroke="#666" stroke-width="1" marker-end="url(#arrow)"/>
+        <text x="80" y="260" fill="#666" font-size="10">safer, more static</text>
+        <text x="500" y="260" fill="#666" font-size="10">riskier, sets up counter</text>
+      </g>
+    </svg>
+    <figcaption>Left to right: safer and more static, then riskier and more rewarding. Most fighters mix all four in a round.</figcaption>
+  </figure>
+
+  <div class="pull">"You can't hit what isn't there." — Willie Pep. The idea is to make the opponent commit to a punch that lands on empty space.</div>
+
+  <!-- ============ RANGE ============ -->
+  <h2><span class="num">06 · Distance</span>Why range matters more than strength</h2>
+  <p>The thing that decides most exchanges is <strong>distance</strong>, not strength or speed. Each punch has a range where it lands clean, and ranges where it misses or has no weight behind it. A lot of a fight is spent arguing about which range both fighters are going to be in.</p>
+
+  <figure>
+    <svg viewBox="0 0 600 280" role="img" aria-label="Three ranges as concentric zones">
+      <g font-family="Helvetica" font-size="12">
+        <!-- fighter -->
+        <g transform="translate(140,140)">
+          <circle r="16" fill="#1a1a1a"/>
+          <rect x="-18" y="14" width="36" height="34" fill="#1a1a1a"/>
+        </g>
+        <!-- rings -->
+        <circle cx="140" cy="140" r="70" fill="#f4d3d8" fill-opacity="0.55" stroke="#c8102e" stroke-dasharray="4 4"/>
+        <circle cx="140" cy="140" r="130" fill="#f6e7c8" fill-opacity="0.4" stroke="#b8860b" stroke-dasharray="4 4"/>
+        <circle cx="140" cy="140" r="200" fill="none" stroke="#999" stroke-dasharray="4 4"/>
+
+        <!-- labels -->
+        <text x="140" y="80" text-anchor="middle" fill="#c8102e" font-weight="700">INSIDE</text>
+        <text x="140" y="96" text-anchor="middle" fill="#666" font-size="10">hooks, uppercuts, clinch</text>
+
+        <text x="360" y="140" fill="#b8860b" font-weight="700">MID-RANGE</text>
+        <text x="360" y="156" fill="#666" font-size="10">crosses, hooks, most exchanges</text>
+
+        <text x="380" y="60" fill="#666" font-weight="700">OUTSIDE</text>
+        <text x="380" y="76" fill="#666" font-size="10">jab, feint, movement</text>
+
+        <text x="460" y="260" text-anchor="middle" fill="#666" font-size="11">→ farther from opponent</text>
+      </g>
+    </svg>
+    <figcaption>Different ranges reward different punches. Each fighter tries to drag the other into the range that suits them.</figcaption>
+  </figure>
+
+  <div class="analogy"><b>A way to picture it</b><br>Range works a bit like gears on a bicycle. On the outside you cover ground easily but can't push much force. On the inside you can hit very hard, but one small balance mistake and you're off your feet. Good boxers switch gears on purpose instead of getting stuck in one.</div>
+
+  <!-- ============ PUT IT TOGETHER ============ -->
+  <h2><span class="num">07 · Putting it together</span>The 1-2</h2>
+  <p>The jab-cross is the first combination any beginner learns. It takes about a second to throw, and all four basics are in it.</p>
+
+  <figure>
+    <svg viewBox="0 0 600 300" role="img" aria-label="Jab-cross sequence in three frames">
+      <g font-family="Helvetica" font-size="11">
+        <!-- Frame 1: stance -->
+        <g transform="translate(100,180)">
+          <text x="0" y="-140" text-anchor="middle" font-weight="700" fill="#c8102e">1. STANCE</text>
+          <line x1="-70" y1="0" x2="70" y2="0" stroke="#b8a577"/>
+          <ellipse cx="-15" cy="-3" rx="12" ry="5" fill="#1a1a1a"/>
+          <ellipse cx="20" cy="-3" rx="12" ry="5" fill="#c8102e" transform="rotate(30 20 -3)"/>
+          <path d="M -10 -5 L -10 -50" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+          <path d="M 15 -5 L 15 -55" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+          <path d="M -12 -60 L 15 -60 L 18 -80 L -15 -80 Z" fill="#c8102e"/>
+          <path d="M -14 -80 Q -16 -110 -8 -125 L 12 -125 Q 20 -110 18 -80 Z" fill="#f2c9a0"/>
+          <circle cx="5" cy="-135" r="10" fill="#f2c9a0"/>
+          <!-- gloves high -->
+          <circle cx="-8" cy="-115" r="8" fill="#c8102e"/>
+          <circle cx="12" cy="-115" r="8" fill="#c8102e"/>
+          <text x="0" y="20" text-anchor="middle" fill="#666" font-size="10">ready · hands up · bladed</text>
+        </g>
+        <!-- Frame 2: jab -->
+        <g transform="translate(300,180)">
+          <text x="0" y="-140" text-anchor="middle" font-weight="700" fill="#c8102e">2. JAB (1)</text>
+          <line x1="-70" y1="0" x2="70" y2="0" stroke="#b8a577"/>
+          <ellipse cx="-15" cy="-3" rx="12" ry="5" fill="#1a1a1a"/>
+          <ellipse cx="20" cy="-3" rx="12" ry="5" fill="#c8102e" transform="rotate(30 20 -3)"/>
+          <path d="M -10 -5 L -10 -50" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+          <path d="M 15 -5 L 15 -55" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+          <path d="M -12 -60 L 15 -60 L 18 -80 L -15 -80 Z" fill="#c8102e"/>
+          <path d="M -14 -80 Q -16 -110 -8 -125 L 12 -125 Q 20 -110 18 -80 Z" fill="#f2c9a0"/>
+          <circle cx="5" cy="-135" r="10" fill="#f2c9a0"/>
+          <!-- lead arm out -->
+          <path d="M -10 -115 L -45 -115" stroke="#f2c9a0" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="-50" cy="-115" r="10" fill="#c8102e"/>
+          <!-- rear still guarding -->
+          <circle cx="14" cy="-118" r="8" fill="#c8102e"/>
+          <path d="M -55 -115 L -70 -115" stroke="#c8102e" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="0" y="20" text-anchor="middle" fill="#666" font-size="10">lead extends · rear guards</text>
+        </g>
+        <!-- Frame 3: cross -->
+        <g transform="translate(500,180)">
+          <text x="0" y="-140" text-anchor="middle" font-weight="700" fill="#c8102e">3. CROSS (2)</text>
+          <line x1="-70" y1="0" x2="70" y2="0" stroke="#b8a577"/>
+          <ellipse cx="-15" cy="-3" rx="12" ry="5" fill="#1a1a1a"/>
+          <!-- rear foot pivoted -->
+          <ellipse cx="18" cy="-3" rx="12" ry="5" fill="#c8102e"/>
+          <path d="M -10 -5 L -10 -50" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+          <path d="M 15 -5 L 15 -55" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
+          <!-- hips rotated -->
+          <path d="M -12 -60 L 18 -60 L 15 -80 L -18 -80 Z" fill="#c8102e"/>
+          <path d="M -16 -80 Q -18 -110 -12 -125 L 8 -125 Q 12 -110 14 -80 Z" fill="#f2c9a0"/>
+          <circle cx="0" cy="-135" r="10" fill="#f2c9a0"/>
+          <!-- rear arm extended -->
+          <path d="M 12 -115 L 55 -115" stroke="#f2c9a0" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="60" cy="-115" r="12" fill="#c8102e"/>
+          <!-- lead returning -->
+          <circle cx="-10" cy="-118" r="8" fill="#c8102e"/>
+          <path d="M 66 -115 L 82 -115" stroke="#c8102e" stroke-width="2" marker-end="url(#arrow)"/>
+          <!-- pivot arc -->
+          <path d="M 18 -3 A 8 8 0 0 1 26 -3" fill="none" stroke="#c8102e" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="0" y="20" text-anchor="middle" fill="#666" font-size="10">rear pivots · hips whip · fist</text>
+        </g>
+        <text x="30" y="30" font-size="12" font-weight="700" fill="#c8102e" letter-spacing="2">THE 1-2 · JAB-CROSS</text>
+      </g>
+    </svg>
+    <figcaption>Stance, then the rear pivot, then the two punches, then back to stance. One second of work.</figcaption>
+  </figure>
+
+  <div class="pull">Underneath every move is the same question: can I touch you without you touching me?</div>
+
+  <p style="margin-top:40px; color:#666; font-size:13px; font-family:Helvetica, Arial, sans-serif;">A guide only goes so far. Pick one basic at a time, work it on a bag or in a mirror, and the rest starts to make sense.</p>
+
+</div>
+</body>
+</html>
